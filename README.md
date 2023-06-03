@@ -72,7 +72,8 @@ END.
 
 ### 变量和数据类型
 --------------
-语法： `DEFINE VARIABLE varname AS datatype.`
+#### 语法： `DEFINE VARIABLE varname AS datatype.`
+
 1. 基础的数据类型
 
     |  名称  |  默认展示格式  |  默认值  |
@@ -112,4 +113,47 @@ END.
     | LABEL | 变量展示标签 | 
     | COLUMN-LABEL | ??? |
     | EXTENT| |
+
+#### 语法： `DEFINE VARIABLE varname LIKE fieldname.`
+
+继承了其他变量或者字段的格式 标签 初始值 和所有其他属性
+
+#### 示例
+1. 示例1
+    ```
+    DEFINE VARIABLE cMonthList AS CHARACTER NO-UNDO
+      INITIAL "JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC".
+      FOR EACH Customer NO-LOCK WHERE Customer.State = "NH" BY Customer.City:
+        DISPLAY Customer.CustNum Customer.Name Customer.City.
+        FOR EACH Order OF Customer NO-LOCK:
+          IF Order.ShipDate NE ? THEN
+          DISPLAY 
+          Order.OrderNum LABEL "Order" 
+          Order.OrderDate
+          Order.ShipDate FORMAT "99/99/99" WITH CENTERED.
+        END.
+      END.
+    ```
+2. 示例2
+```
+DEFINE VARIABLE cMonthList AS CHARACTER NO-UNDO
+INITIAL "JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC".
+  FOR EACH Customer NO-LOCK WHERE Customer.State = "NH" BY Customer.City:
+    DISPLAY Customer.CustNum Customer.Name Customer.City.
+    FOR EACH Order OF Customer NO-LOCK:
+      DISPLAY 
+      Order.OrderNum LABEL "Order" 
+      Order.OrderDate
+      Order.ShipDate FORMAT "99/99/99" WITH CENTERED.
+      IF Order.ShipDate NE ? THEN
+      DISPLAY ENTRY(MONTH(Order.ShipDate), cMonthList) LABEL "Month".
+    END.
+  END.
+```
+
+
+
+
+
+
 
