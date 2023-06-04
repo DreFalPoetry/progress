@@ -232,8 +232,75 @@
 
     ```
 
+### 程序运算
+
+1. 运算操作 （ +，-，*，/）
+
+    例子：
+    如果客户的信用额度小于未偿余额的两倍，则显示信用限制与未偿余额的比率。否则，显示该客户的订单。
+    ```
+    DEFINE VARIABLE cMonthList AS CHARACTER NO-UNDO
+    INITIAL "JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC".
+
+    FOR EACH Customer NO-LOCK WHERE Customer.State = "NH" BY Customer.City:
+      DISPLAY Customer.CustNum Customer.Name Customer.City.
+      IF Customer.CreditLimit < 2 * Customer.Balance THEN
+        DISPLAY "Credit Ratio:" Customer.CreditLimit / Customer.Balance.
+      ELSE
+        FOR EACH Order OF Customer NO-LOCK:
+          DISPLAY 
+          Order.OrderNum LABEL "Order" 
+          Order.OrderDate
+          Order.ShipDate FORMAT "99/99/99" WITH CENTERED.
+          IF Order.ShipDate NE ? THEN
+          DISPLAY ENTRY(MONTH(Order.ShipDate), cMonthList) LABEL "Month".
+        END.
+    END.
+    ```
+
+2. 算数内置函数
+
+    | 函数 | 参数 | 返回值 | 
+    |--| --| --|
+    | ABSOLUTE | value AS INTEGER or DECIMAL | INTEGER or DECIMAL| 
+    | EXP 指数函数 | | |
+    | LOG 对数函数 | | |
+    | MAXIMUM | | |
+    | MINIMUM | | |
+    | MODULO 余数 | | |
+    | RANDOM | | |
+    | ROUND | | |
+    |  SQRT  平方根 | | |
+    |  TRUNCATE | | |
 
 
+    ```
+    ABSOLUTE:
+    def var num as deci init -1.23.
+    disp absolute(num).
+    结果： 1.23
+
+    EXP:
+    def var num as deci init 4.
+    disp exp(num, 3).
+    结果： 64
+
+    ROUND： 
+    def var a as deci init 1.236. 
+    disp ROUND(a, 2).
+    结果： 1.24
+
+    SQRT： 
+    def var a as deci init 3.16. 
+    disp SQRT(a).
+    结果: 1.78
+
+    TRUNCATE: 
+    def var a as deci init 3.16. 
+    disp TRUNCATE(a,1).
+    结果: 3.10
+
+    ```
 
 
 
