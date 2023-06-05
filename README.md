@@ -302,6 +302,25 @@
 
     ```
 
+3. 转存为 `.r` 文件
+
+* 打开New Procedure Window. 
+
+  运行：`COMPILE h-CustSample.p SAVE.` 在文件目录中生成 `.r` 文件
+
+* `COMPILE source-procedure SAVE INTO directory.`
+
+    例如
+    `compile c:\abc\test.p save into c:\000\`
+    在c盘000文件夹中生成了一个`test.r`文件
+
+    在编辑器 执行 `run c:\000\test.r` 可以得到运行结果
+
+
+
+
+
+
 
 
 
