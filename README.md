@@ -317,6 +317,50 @@
     在编辑器 执行 `run c:\000\test.r` 可以得到运行结果
 
 
+### 运行ABL程序 Running ABL Procedures
+
+1. 运行子程序
+    
+    语法
+    ```
+    RUN procedure-name [ (parameters) ].
+    ```
+    示例：
+
+    `run E:/p/test.p.`
+
+### 使用外部和内部程序 Using external and internal procedures 
+
+1. 编写内部程序
+
+    * 以 `PROCEDURE`开头跟程序名称
+    * 定义过程中使用的参数，并定义参数类型 输入 输出 或者 输入-输出
+    `INPUT`, `OUTPUT`, `INPUT-OUTPUT`
+    * 参数名以p开头以便识别
+
+    示例：定义一个名为 ` calcDays` 的过程
+    ```
+    PROCEDURE calcDays:
+      DEFINE INPUT PARAMETER pdaShip AS DATE NO-UNDO.
+      DEFINE OUTPUT PARAMETER piDays AS INTEGER NO-UNDO.
+    ```
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
