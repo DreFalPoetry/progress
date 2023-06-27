@@ -763,8 +763,49 @@
         DISPLAY Customer.CustNum Customer.Name.
       END.
       ```
+<br/>
       
+### 记录缓冲区和记录范围
+----------
 
+#### 记录缓冲区
+-----
+1. 语法
+
+    ```
+    DEFINE BUFFER <buffer-name> FOR <table-name>.
+    ```
+    There are many places in complex business logic where you need to have two or more different records from the same table available to your code at the same time, for comparison purposes. This is when you might use multiple different buffers with their own names. Here’s one fairly simple example. In the following procedure, which could be used as part of a cleanup effort for the Customer table, you need to see if there are any pairs of Customers in the same city in the US with zip codes that do not match.
+
+    在复杂的业务逻辑中，有许多地方，您需要同时将同一表中的两个或多个不同的记录可用于代码，以便进行比较。这时，您可以使用多个不同的具有自己名称的缓冲区。这里有一个相当简单的例子。在以下过程中，可以作为客户表清理工作的一部分，您需要查看在美国同一城市是否有邮政编码不匹配的客户对。
+
+    示例：解释查看 `p109`
+    ```
+    DEFINE BUFFER Customer FOR Customer.
+    DEFINE BUFFER OtherCust FOR Customer.
+
+    FOR EACH Customer NO-LOCK WHERE Customer.Country = "USA":
+      FIND FIRST OtherCust NO-LOCK
+        WHERE Customer.State = OtherCust.State
+          AND Customer.City = OtherCust.City
+          AND SUBSTRING(Customer.PostalCode, 1,3) NE 
+              SUBSTRING(OtherCust.PostalCode, 1,3)
+          AND Customer.CustNum < OtherCust.CustNum NO-ERROR.
+      IF AVAILABLE OtherCust THEN
+        DISPLAY 
+          Customer.CustNum 
+          Customer.City FORMAT "x(12)" 
+          Customer.State FORMAT "xx"
+          Customer.PostalCode 
+          OtherCust.CustNum
+          OtherCust.PostalCode.
+    END.
+    ```
+
+#### 记录范围 `p111`
+-----
+
+### Using Queries 
 
 
 
