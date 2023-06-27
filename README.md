@@ -1,4 +1,5 @@
 # progress
+<br/>
 
 ### 语法
 ---------------------
@@ -69,6 +70,7 @@
     | MATCHES | | 相匹配的字符串（"*"表示全部 "."表示没有匹配到的）
     | CONTAINS ？？ | | 包含 | 
 
+<br/>
 
 ### 变量和数据类型
 --------------
@@ -148,8 +150,10 @@
         END.
       END.
     ```
+<br/>
 
 ### ABL函数 ABL Functions
+---------------------
 1. Date functions 日期函数
 
     | 函数 | 参数 | 返回值 | 
@@ -231,8 +235,10 @@
     结果返回："12 34"
 
     ```
+<br/>
 
 ### 程序运算
+---------------------
 
 1. 运算操作 （ +，-，*，/）
 
@@ -316,8 +322,10 @@
 
     在编辑器 执行 `run c:\000\test.r` 可以得到运行结果
 
+<br/>
 
 ### 运行ABL程序 Running ABL Procedures
+---------------------
 
 1. 运行子程序
     
@@ -329,7 +337,10 @@
 
     `run E:/p/test.p.`
 
+<br/>
+
 ### 使用外部和内部程序 Using external and internal procedures 
+---------------------
 
 1. 编写内部程序
 
@@ -337,13 +348,82 @@
     * 定义过程中使用的参数，并定义参数类型 输入 输出 或者 输入-输出
     `INPUT`, `OUTPUT`, `INPUT-OUTPUT`
     * 参数名以p开头以便识别
+    * 以`END PROCEDURE`结束 提高代码可读性
+
+    <br/>
 
     示例：定义一个名为 ` calcDays` 的过程
     ```
     PROCEDURE calcDays:
       DEFINE INPUT PARAMETER pdaShip AS DATE NO-UNDO.
       DEFINE OUTPUT PARAMETER piDays AS INTEGER NO-UNDO.
+      piDays = TODAY - pdaShip.
+    END PROCEDURE.
     ```
+2. 运行内部程序 并展示运行结果
+    ```
+    RUN calcDays (INPUT Order.ShipDate, OUTPUT iDays).
+    DISPLAY iDays LABEL "Days" FORMAT "ZZZ9".
+    ```
+3. 涉及语法：为变量赋值
+
+    Syntax：简介语法
+    ```
+    result-value = IF logical-expression
+        THEN value-if-true ELSE value-if-false
+    ```
+    示例：
+    ```
+    piDays = IF pdaShip = ? THEN 0 ELSE TODAY - pdaShip.
+    ```
+4. 返回语句和返回值 
+  在过程结尾放置返回语句
+    ```
+    RETURN [ return-value ].
+    ```
+    如果在调用过程中没有返回值，则返回空字符串
+
+    返回语句在过程中是可选的
+5. 向过程中添加注释
+    以 `/*` 开头以 `*/` 结束
+6. 完整示例
+
+    `h-CustSample.p`
+    ```
+    /* h-CustSample.p — shows a few things about ABL */
+    DEFINE VARIABLE cMonthList AS CHARACTER NO-UNDO
+      INITIAL "JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC".
+    DEFINE VARIABLE iDays AS INTEGER NO-UNDO.
+    /* First display each Customer from New Hampshire: */
+    FOR EACH Customer NO-LOCK WHERE Customer.State = "NH" BY Customer.City:
+      DISPLAY Customer.CustNum Customer.Name Customer.City.
+      /* Show the Orders unless the Credit Limit is less than twice the balance. */
+      IF Customer.CreditLimit < (2 * Customer.Balance) THEN
+        DISPLAY "Credit Ratio:" Customer.CreditLimit / Customer.Balance.
+      ELSE
+      FOR EACH Order OF Customer NO-LOCK:
+        DISPLAY
+          Order.OrderNum LABEL "Order"   
+          Order.OrderDate
+          Order.ShipDate FORMAT "99/99/99" WITH CENTERED. 
+          /* Show the month as a three-letter abbreviation, 
+          along with the number of days since the order was shipped. */
+        IF Order.ShipDate NE ? THEN
+          DISPLAY ENTRY(MONTH(Order.ShipDate), cMonthList) LABEL "Month".
+        RUN calcDays (INPUT Order.ShipDate, OUTPUT iDays).
+        DISPLAY iDays LABEL "Days" FORMAT "ZZZ9".
+      END.
+    END.
+
+    PROCEDURE calcDays:
+      /* This calculates the number of days since the Order was shipped.*/ 
+      DEFINE INPUT PARAMETER pdaShip AS DATE NO-UNDO.
+      DEFINE OUTPUT PARAMETER piDays AS INTEGER NO-UNDO.
+      piDays = IF pdaShip = ? THEN 0 ELSE TODAY - pdaShip.
+    END PROCEDURE.
+    ```   
+
+
     
 
 
