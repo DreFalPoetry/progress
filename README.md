@@ -422,6 +422,356 @@
       piDays = IF pdaShip = ? THEN 0 ELSE TODAY - pdaShip.
     END PROCEDURE.
     ```   
+<br/>
+
+### 程序块和数据访问
+---------
+1. 块和块属性 Blocks and block properties
+
+    * Every procedure itself constitutes a block, even just the simplest RUN statement executed from an editor window.
+
+      每个过程本身都构成一个块，甚至是从编辑器窗口执行的最简单的RUN语句。
+    * Every call to another procedure, whether internal or external, starts another block. An external procedure can contain one or more internal procedures, each of which forms its own block.  
+
+      对另一个过程的调用，无论是内部还是外部，都会启动另一个块。外部过程可以包含一个或多个内部过程，每个内部过程都形成自己的块。
+    * ABL statements such as FOR EACH and DO define the start of a new block.
+
+        诸如FOR EACH和DO等ABL语句定义了一个新块的开始。
+    * A trigger is a block of its own. 
+
+        触发器是它自己的一个块。
+
+2. 程序块作用域 Procedure block scoping 
+
+    如果在内部过程中定义了变量或其他对象，则它的作用域仅限于该内部过程，在包含它的外部过程中无法使用。可以在内部过程和包含它的外部过程定义相同的变量名。将得到第二个变量，名称相同但是存储位置不同，因此值也不相同。
+
+      示例1（外部程序定义变量在内部过程中也可用）
+      ```
+      /* mainproc.p */
+      /* This is scoped to the whole external procedure. */
+      DEFINE VARIABLE cVar AS CHARACTER NO-UNDO INITIAL "Mainproc". 
+      RUN subproc.
+      PROCEDURE subproc:
+        DISPLAY cVar.
+      END PROCEDURE.
+      ```
+
+      示例2 (在内部过程中定义自己的变量)
+      ```
+      /* mainproc.p */
+      /* This is scoped to the whole external procedure. */
+      DEFINE VARIABLE cVar AS CHARACTER NO-UNDO INITIAL "Mainproc".
+      RUN subproc.
+      DISPLAY cVar.
+      PROCEDURE subproc:
+        DEFINE VARIABLE cVar AS CHARACTER NO-UNDO.
+        cVar = "Subproc".
+      END PROCEDURE.
+      ```
+      You assign a different value to the variable in the subprocedure, but because the subprocedure has its own copy of the variable, that value exists only within the subprocedure. Back in the main procedure, the value Mainproc is not overwritten even after the subprocedure call.
+
+      您可以为子过程中的变量分配不同的值，但由于子过程具有自己的变量副本，因此该值只存在于子过程中。回到主过程中，即使在子过程调用之后，主程序的值也不会被覆盖。
+      
+      示例3 
+      ```
+      /* mainproc.p */
+      /* This is scoped to the whole external procedure. */
+      DEFINE VARIABLE cVar AS CHARACTER NO-UNDO INITIAL "Mainproc". 
+
+      RUN subproc.
+      DISPLAY cVar cSubVar.
+
+      PROCEDURE subproc:
+        DEFINE VARIABLE cVar AS CHARACTER NO-UNDO.
+        DEFINE VARIABLE cSubVar AS CHARACTER NO-UNDO.
+        ASSIGN
+          cVar = "Subproc"
+          cSubVar = "LocalVal".
+      END PROCEDURE.
+      ```
+      Here cSubVar is defined only in the internal procedure, so when you try to display it from the main procedure block you get an error
+
+      这里的cSubVar仅在内部过程中定义，因此当您试图从主过程块中显示它时，您会得到一个错误
+    
+3. 定义块的语言语句 Language statements that define blocks
+    * DO blocks
+
+      Looping with a DO block
+
+      语法
+      ```
+      DO variable = expression1 TO expression2 [ BY constant ]:
+      ```
+      示例：将1-5的整数相加 并显示总数
+      ```
+      DEFINE VARIABLE iCount AS INTEGER NO-UNDO.
+      DEFINE VARIABLE iTotal AS INTEGER NO-UNDO.
+
+      DO iCount = 1 TO 5:
+        iTotal = iTotal + iCount.
+      END.
+      DISPLAY iTotal.
+      ```
+
+      起始值和结束值可以是表达式，而不仅仅是常量
+
+      示例：
+      ```
+      DEFINE VARIABLE iCount AS INTEGER NO-UNDO.
+      DEFINE VARIABLE iTotal AS INTEGER NO-UNDO INITIAL 1.
+
+      DO iCount = iTotal TO 5:
+        iTotal = iTotal + iCount.
+      END.
+      DISPLAY iTotal.
+      ```
+
+    * 使用do语句使用逻辑条件
+      ```
+      DO WHILE expression:
+      ```
+      示例：
+      ```
+      DEFINE VARIABLE iTotal AS INTEGER NO-UNDO INITIAL 1.
+
+      DO WHILE iTotal < 50:
+        iTotal = iTotal * 2.
+      END.
+      DISPLAY iTotal.
+      ```
+
+      其余关于do的示例表示有关frame部分暂时无法实验 `p86`
+
+
+    * FOR blocks： for块    
+      * Loops automatically through all the records that satisfy the record set definition in the block 
+
+        自动循环浏览块中满足记录集定义的所有记录
+
+      * Reads the next record from the result set for you as it iterates
+
+        在迭代结果中读取下一个记录
+
+      * Scopes those records to the block
+
+         将这些记录的范围限定到该块
+
+      * Scopes a frame to the block, and you can use the WITH FRAME phrase to specify that frame
+
+        将框架扩展到块，您可以使用 `WITH FRAME` 短语来指定该框架
+
+      * Provides database update services within a transaction
+
+        在事务中提供数据库更新服务
+
+      Sorting records by using the BY phrase（通过使用BY短语对记录进行排序）
+
+      使用by时默认升序。如需降序则添加关键字  DESCENDING
+      ```
+      BY field [ DESCENDING ] ...
+      ```
+
+      Joining tables using multiple FOR phrases (使用多个FOR短语连接表)
+      ```
+      FOR EACH Customer NO-LOCK WHERE Customer.State = "NH", 
+        EACH Order OF Customer NO-LOCK WHERE Order.ShipDate NE ? :
+        DISPLAY Customer.Custnum Customer.Name Order.OrderNum Order.ShipDate.
+      END.
+      ```
+      
+      不使用限定符：(检索订单和他们的客户 要确保关联表只有唯一匹配)
+      ```
+      FOR EACH Order NO-LOCK WHERE Order.ShipDate NE ?, Customer OF Order NO-LOCK:
+        DISPLAY Order.OrderNum Order.ShipDate Customer.Name.
+      END.
+      ```
+
+      查看每个客户的第一个订单：
+      ```
+      FOR EACH Customer NO-LOCK WHERE Customer.State = "NH", 
+        FIRST Order OF Customer NO-LOCK:
+        DISPLAY Customer.CustNum Customer.Name Order.OrderNum Order.OrderDate.
+      END.
+      ```
+      使用first需要注意第一个订单的排序方式问题:
+      所以，就关系到这个问题：Using indexes to relate and sort data （使用索引来关联和排序数据）
+      该例子默认按照 ordernum进行升序排序 所以返回的首个订单是orderNum最小的订单
+      * Using the USE-INDEX phrase to force a retrieval order：使用使用-索引短语来强制执行检索顺序
+        示例：
+        ```
+        FOR EACH Customer NO-LOCK WHERE Customer.State = "NH", 
+          FIRST Order OF Customer NO-LOCK USE-INDEX OrderDate:
+          DISPLAY Customer.CustNum Customer.Name Order.OrderNum Order.OrderDate.
+        END.
+        ```
+      * Using the LEAVE statement to leave a block：使用leave语句离开一个块
+        ```
+        FOR EACH Customer NO-LOCK WHERE Customer.State = "NH" WITH FRAME f:
+          DISPLAY Customer.CustNum Customer.Name.
+          FOR EACH Order OF Customer NO-LOCK BY Order.OrderDate:
+            DISPLAY Order.OrderNum Order.OrderDate WITH FRAME f.
+            LEAVE.
+          END. /* FOR EACH Order */
+        END. /* FOR EACH Customer */
+        ```
+        在显示客户订单的第一条记录后离开块
+
+      * Using block headers to identify blocks  使用块标头来标识块
+        ```
+        FOR EACH Customer NO-LOCK WHERE Customer.State = "NH" WITH FRAME f:
+          DISPLAY Customer.CustNum Customer.Name.
+          OrderBlock:
+          FOR EACH Order OF Customer NO-LOCK BY Order.OrderDate:
+              DISPLAY Order.OrderNum Order.OrderDate WITH FRAME f.
+              LEAVE OrderBlock.
+          END. /* FOR EACH Order */
+        END. /* FOR EACH Customer */
+        ```
+        ```
+        CustBlock:
+        FOR EACH Customer NO-LOCK WHERE Customer.State = "NH" WITH FRAME f:
+          DISPLAY Customer.CustNum Customer.Name.
+          OrderBlock:
+          FOR EACH Order OF Customer NO-LOCK BY Order.OrderDate:
+            DISPLAY Order.OrderNum Order.OrderDate WITH FRAME f.
+            LEAVE CustBlock.
+          END. /* FOR EACH Order */
+        END. /* FOR EACH Customer */
+        ```
+      * Using NEXT, STOP, and QUIT to change block behavior(使用NEXT、STOP和QUIT来更改块行为)
+
+        STOP terminates the current procedure, backs out any active transactions, and returns to the OpenEdge session’s startup procedure or to the Editor. You can intercept a STOP action by including the ON STOP phrase on a block header, which defines an action to take other than the default when the STOP condition occurs.
+
+        STOP终止当前过程，退出任何活动的事务，并返回到OpenEdge会话的启动过程或编辑器。您可以通过在块标头上包含ON STOP短语来拦截STOP操作，该短语定义了在STOP条件发生时要采取的非默认操作。
+
+        QUIT exits from OpenEdge altogether in a run-time environment and returns to the operating system. If you’re running in a development environment, it has a similar effect to STOP and returns to the Editor or to the Desktop. There is also an ON QUIT phrase to intercept the QUIT condition in a block header and define an action to take other than quitting the session.
+
+        QUIT在运行时环境中完全从OpenEdge中退出，并返回到操作系统。如果您是在开发环境中运行的，那么它的效果类似于STOP，并返回到编辑器或桌面。还有一个ON QUIT短语，用于拦截块头中的QUIT条件，并定义除退出会话以外要采取的操作。
+
+    * REPEAT blocks （与for块同样的语法）：`P96`
+
+      使用：重复数据输入操作
+      ```
+      REPEAT:
+        INSERT Customer EXCEPT Customer.Comments WITH 2 COLUMNS.
+      END.
+      ```
+
+      Using the PRESELECT keyword to get data in advance(使用`PRESELECT`关键字提前获取数据)
+
+    * Data access without looping—the FIND statement(无循环的数据访问-FIND语句)
+      Syntax
+      ```
+      FIND [ FIRST | NEXT| PREV | LAST ] record [ WHERE ...]
+            [ USE-INDEX index-name ]
+      ```
+
+      示例：
+      ```
+      FIND FIRST Customer.
+      ```
+      ```
+      FIND FIRST Customer WHERE Customer.State = “NH”.
+      ```
+      If you include a WHERE clause, the AVM chooses one or more indexes to optimize locating the record. This might have very counter-intuitive results.
+      如果包含WHERE子句，AVM将选择一个或多个索引来优化记录的定位。这可能会有非常违反直觉的结果。如下例子展示:
+      ```
+      FIND FIRST Customer.
+      DISPLAY Customer.CustNum Customer.Name Customer.Country.
+      ```
+      ```
+      FIND FIRST Customer WHERE Customer.Country = "USA".
+      DISPLAY Customer.CustNum Customer.Name Customer.Country.
+      ```
+
+      ```
+      FIND FIRST Customer NO-LOCK WHERE Customer.Country = "USA".
+      DISPLAY Customer.CustNum Customer.Name Customer.Country.
+      REPEAT:
+        FIND NEXT Customer NO-LOCK NO-ERROR.
+        IF AVAILABLE Customer THEN
+          DISPLAY Customer.CustNum Customer.Name FORMAT "x(20)" Customer.Country Customer.PostalCode.
+        ELSE LEAVE.
+      END.
+      ```
+      继续索引只在美国的客户：
+      ```
+      FIND FIRST Customer NO-LOCK WHERE Country = "USA".
+      DISPLAY Customer.CustNum Customer.Name Customer.Country.
+      REPEAT:
+        FIND NEXT Customer NO-LOCK WHERE Customer.Country = "USA" NO-ERROR.
+        IF AVAILABLE Customer THEN
+          DISPLAY Customer.CustNum Customer.Name FORMAT "x(20)" Customer.Country
+      Customer.PostalCode.
+        ELSE LEAVE.
+      END.
+      ```
+
+      Using a USE-INDEX phrase to force index selection
+      使用`USE-INDEX`短语来强制进行索引选择
+      ```
+      FIND FIRST Customer NO-LOCK WHERE Customer.Country = "USA".
+      DISPLAY Customer.CustNum Customer.Name Customer.Country.
+      REPEAT:
+        FIND NEXT Customer WHERE Customer.Country = "USA" USE-INDEX NAME NO-ERROR.
+        IF AVAILABLE Customer THEN
+          DISPLAY Customer.CustNum Customer.Name FORMAT "x(20)"
+      Customer.Country Customer.PostalCode.
+        ELSE LEAVE.
+      END.
+      ```
+
+      Doing a unique FIND to retrieve a single record
+      执行唯一的查找操作来检索单个记录
+      ```
+      FIND Customer WHERE Customer.CustNum = 1025.
+      DISPLAY Customer.CustNum Customer.Name Customer.Country.
+
+      速写
+      FIND Customer 1025.
+      ```
+
+      Using the CAN-FIND function（使用CAN-FIND函数）
+      示例：
+
+      如果客户有1997年的订单，则过程将显示客户名称。否则，它将显示文本短语No 1997订单。如果在显示语句中包含该文字值，它将显示在自己的列中，就像它是一个字段或变量一样。要显示它以代替“名称”字段，请使用位置标记符号（@）。
+      ```
+      FOR EACH Customer NO-LOCK WHERE Customer.Country = "USA":
+        IF CAN-FIND(FIRST Order OF Customer WHERE Order.OrderDate < 1/1/98) THEN
+          DISPLAY Customer.CustNum Customer.Name.
+        ELSE 
+          DISPLAY Customer.CustNum "No 1997 Orders" @ Customer.Name.
+      END.
+      ```
+
+      If you need the Order record itself then you must use a form that returns it to you:
+      如果您需要订单记录本身，那么您必须使用一个表单，返回它给您：
+      ```
+      FOR EACH Customer NO-LOCK WHERE Customer.Country = "USA":
+        FIND FIRST Order OF Customer NO-LOCK WHERE OrderDate < 1/1/98 NO-ERROR.
+        IF AVAILABLE Order THEN
+          DISPLAY Customer.CustNum Customer.Name Order.OrderDate.
+        ELSE 
+          DISPLAY "No 1997 Orders" @ Customer.Name.
+      END.
+      ```
+
+      和where语句一同使用 can-find
+      ```
+      FOR EACH Customer NO-LOCK WHERE Customer.Country = "USA" AND 
+        CAN-FIND(FIRST Order OF Customer WHERE Order.OrderDate < 1/1/98):
+        DISPLAY Customer.CustNum Customer.Name.
+      END.
+      ```
+      
+
+
+
+
+
+
+
+
 
 
     
