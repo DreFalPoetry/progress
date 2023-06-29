@@ -218,8 +218,33 @@
     FOR EACH Customer BY Customer.CreditLimit BY Customer.Name
     ```
 
+11. `CAN-DO` function
 
+12. `CAN-FIND` function
 
+    Returns a TRUE value if a record is found that meets the specified FIND criteria;  otherwise it returns FALSE.  
+    如果找到符合指定FIND条件的记录，则返回TRUE值;否则返回FALSE。
+    
+13. `caps`
+
+    Converts any lowercase characters in a CHARACTER or LONGCHAR expression to uppercase characters, and returns the result.
+
+    将CHARACTER或LONGCHAR表达式中的任何小写字符转换为大写字符，并返回结果。
+
+    ```
+    REPEAT:  
+      PROMPT-FOR Customer.CustNum.  
+      FIND Customer USING Customer.CustNum.  
+      UPDATE Customer.Name Customer.Address Customer.City Customer.State.  
+      Customer.State = CAPS(Customer.State).  
+      DISPLAY Customer.State.
+    END.
+    ```
+
+14. `CASE` statement
+
+    基于单个表达式的值提供多分支决策。
+    
 
 
 
