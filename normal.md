@@ -171,6 +171,82 @@
         OrderLine.LineNum = newordli.
     END.
     ```
+7. `AVAILABLE` function
 
+    Returns a TRUE value if the record buffer you name contains a record and returns a FALSE value if the record buffer is empty.
+
+    如果您指定的记录缓冲区包含一条记录，则返回TRUE值;如果记录缓冲区为空，则返回FALSE值。
+    ```
+    REPEAT:  
+      PROMPT-FOR Item.ItemNum.  
+      FIND Item USING ItemNum NO-ERROR.  
+      IF AVAILABLE Item THEN     
+          DISPLAY Item.ItemName Item.Price.  
+      ELSE     
+          MESSAGE "Not found".
+    END.
+    ```
+8. for each *** break by
+    break 根据某个字段进行分组 需要在break后使用by关键字做排序
+    ```
+    FOR EACH Customer BREAK BY Customer.State:  
+    DISPLAY Customer.State Customer.Name     
+            Customer.CreditLimit (TOTAL BY state).
+    END.
+    ```
+
+9. `BUFFER-COPY` statement
+    记录缓冲区复制
+    ```
+   BUFFER-COPY source [ { EXCEPT | USING } field ... ]  
+    TO target [ ASSIGN assign-expression ... ] [ NO-LOBS ] [ NO-ERROR ]
+    ```
+10. `by` Option
+    
+    Performs aggregation for break groups if you use the BREAK option in a FOR EACH block header. 
+
+    如果在for EACH块标头中使用break选项，则对break组执行聚合。
+    
+    ```
+    FOR EACH Customer NO-LOCK BREAK BY Customer.Country:  
+    DISPLAY Customer.Name Customer.Country Customer.Balance   
+      (SUB-TOTAL BY Customer.country).
+    END.
+    ```
+    作为排序依据
+    ```
+    FOR EACH Customer BY Customer.CreditLimit BY Customer.Name
+    ```
+
+
+
+
+
+
+```
+DEFINE QUERY q-order FOR Customer, Order, OrderLine, Item. 
+OPEN QUERY q-order FOR EACH Customer,  
+    EACH Order OF Customer,  
+    EACH OrderLine OF Order,  
+    EACH Item OF OrderLine NO-LOCK.
+    
+GET FIRST q-order. 
+
+DO WHILE AVAILABLE Customer:  
+    DISPLAY Customer.CustNum Customer.Name SKIP    
+        Customer.Phone SKIP    
+        Order.OrderNum Order.OrderDate SKIP    
+        OrderLine.LineNum OrderLine.Price OrderLine.Qty SKIP    
+        Item.ItemNum Item.ItemName SKIP    
+        Item.CatDesc VIEW-AS EDITOR SIZE 50 BY 2 SCROLLBAR-VERTICAL    
+        WITH FRAME ord-info CENTERED SIDE-LABELS TITLE "Order Information".   
+        
+    /* Allow scrolling, but not modification, of CatDesc. */  
+    ASSIGN Item.CatDesc:READ-ONLY IN FRAME ord-info = TRUE         
+            Item.CatDesc:SENSITIVE IN FRAME ord-info = TRUE.  
+    PAUSE.  
+    GET NEXT q-order.
+END. /* DO WHILE AVAILABLE Customer */ 
+```
 
 
