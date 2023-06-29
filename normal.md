@@ -100,5 +100,77 @@
     END.
     ```
 
+4. `ADD-INTERVAL` function
+
+    Adds a time interval to, or subtracts a time interval from, a DATE, DATETIME, or DATETIME-TZ value, and returns the new value.
+
+    向DATE、DATETIME或DATETIME- tz值添加时间间隔或从中减去时间间隔，并返回新值。
+    ```
+    ADD-INTERVAL (datetime, interval-amount, interval-unit)
+    ```
+    示例：
+    ```
+    disp ADD-INTERVAL (today, 1, "days").
+    ```
+
+5. `ASC` function
+
+    Converts a character expression representing a single character into the corresponding ASCII (or internal code page) value, returned as an INTEGER.
+
+    将表示单个字符的字符表达式转换为相应的ASCII(或内部代码页)值，并作为INTEGER返回。
+
+    计算以每个字母A-Z开头的客户名的数量和其他不以 a-z开头的客户数量记为other
+    ```
+    DEFINE VARIABLE ix   AS INTEGER NO-UNDO.
+    DEFINE VARIABLE jx   AS INTEGER NO-UNDO.
+    DEFINE VARIABLE ltrl AS INTEGER NO-UNDO EXTENT 27. 
+
+    FOR EACH Customer NO-LOCK:  
+        ix = ASC(SUBSTRING(Customer.Name,1,1)).  
+        IF ix < ASC("A") or ix > ASC("Z") THEN ix = EXTENT(ltrl).  
+        ELSE ix = ix - ASC("A") + 1.  
+        ltrl[ix] = ltrl[ix] + 1.
+    END.
+    
+    DO jx = 1 TO EXTENT(ltrl) WITH NO-LABELS USE-TEXT:  
+        IF jx <= 26 THEN    
+            DISPLAY CHR(ASC("A") + jx - 1) @ ltr-name AS CHARACTER FORMAT "x(5)".  
+        ELSE     
+            DISPLAY "Other" @ ltr-name.  
+        DISPLAY ltrl[jx].
+    END.
+    ```
+
+6. `ASSIGN` statement
+
+    示例1：
+    ```
+    REPEAT:
+      PROMPT-FOR Customer.CustNum.
+      FIND Customer USING Customer.CustNum NO-ERROR.
+      IF NOT AVAILABLE Customer THEN DO:
+        CREATE Customer.
+        ASSIGN Customer.CustNum.
+      END. 
+      UPDATE Customer WITH 2 COLUMNS.
+    END.
+    ```
+    示例2：输入订单号和订单行号 找到这个订单行
+    设置 两个变量
+    找到 订单号和输入的新号匹配的订单 设置订单行的订单号为新订单号 行号为新行号
+    ```
+    DEFINE VARIABLE neword LIKE order-line.order-num LABEL "New Order".
+    DEFINE VARIABLE newordli LIKE order-line.line-num LABEL "New Order Line".
+    REPEAT:
+      PROMPT-FOR OrderLine.OrderNum OrderLine.LineNum.
+      FIND OrderLine USING OrderLine.OrderNum AND OrderLine.LineNum.
+      SET neword newordli.
+      FIND Order WHERE Order.OrderNum = neword.
+      ASSIGN 
+        OrderLine.OrderNum = neword
+        OrderLine.LineNum = newordli.
+    END.
+    ```
+
 
 
