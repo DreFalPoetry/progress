@@ -244,7 +244,153 @@
 14. `CASE` statement
 
     基于单个表达式的值提供多分支决策。
+    ```
+    DEFINE VARIABLE pay-stat AS INTEGER NO-UNDO INITIAL 1.
+    UPDATE pay-stat VIEW-AS RADIO-SET
+      RADIO-ITEM unpaid 1 LABEL "Unpaid"
+      RADIO-ITEM part 2 LABEL "Partially paid"
+      RADIO-ITEM paid 3 LABEL "Paid in full".
+
+    CASE pay-stat:
+      WHEN 1 THEN
+      MESSAGE "This account is unpaid.".
+      WHEN 2 THEN 
+      MESSAGE "This account is partially paid.".
+      WHEN 3 THEN 
+      MESSAGE "This account is paid in full.".
+    END CASE.
+    ```
+
+15. `CHR` function
+    ```
+    DEFINE VARIABLE ix     AS INTEGER   NO-UNDO.
+    DEFINE VARIABLE letter AS CHARACTER NO-UNDO FORMAT "X(1)" EXTENT 26. 
+
+    DO ix = 1 TO 26:  
+        letter[ix] = CHR((ASC("A")) - 1 + ix).
+    END. 
+
+    DISPLAY SKIP(1) letter WITH 2 COLUMNS NO-LABELS  
+        TITLE "T H E  A L P H A B E T".
+    ```
+
+
+16. `CLEAR` statement
+
+    清除帧中所有填充字段的数据。它还清除框架中所有小部件的颜色，启用的填充物除外。
+
+    ```
+    DEFINE VARIABLE a AS CHARACTER NO-UNDO INITIAL "xxxxxxxx".
+    DEFINE VARIABLE b AS DATE      NO-UNDO INITIAL TODAY.
+    DEFINE VARIABLE c AS DECIMAL   NO-UNDO INITIAL "-12,345.67".
+    DEFINE VARIABLE d AS INTEGER   NO-UNDO INITIAL "-1,234,567".
+    DEFINE VARIABLE e AS LOGICAL   NO-UNDO INITIAL TRUE.
+
+    DISPLAY "This illustrates the default formats for the different data types"
+        SKIP (2) WITH CENTERED ROW 4 NO-BOX FRAME head.
+    FORM "CHARACTER default format is ""x(8)"" " a SKIP
+        "DATE default format is 99/99/99         " b SKIP
+        "DECIMAL default format is ->>,>>9.99    " c SKIP
+        "INTEGER default format is ->,>>>,>>9    " d SKIP
+        "LOGICAL default format is yes/no        " e TO 55 SKIP
+          WITH ROW 12 NO-BOX NO-LABELS CENTERED FRAME ex.
+          
+          
+    REPEAT:  
+        DISPLAY a b c d WITH FRAME ex.  
+        MESSAGE "Do you want to put in some values?"  
+        UPDATE e.  
+        IF e THEN DO:    
+            CLEAR FRAME ex NO-PAUSE.    
+            SET a b c d WITH FRAME ex.  
+        END.  
+        ELSE LEAVE.
+    END.
+    ```
+
+17. `COLUMN-LABEL` option
+
+    Names the label you want to display above the variable data in a frame that uses column labels.  If you want the label to use more than one line (a stacked label), use an exclamation point (!) in the label to indicate where to break the line. 
+
+    在使用列标签的框架中，指定要在变量数据上方显示的标签。如果希望标签使用多行(堆叠标签)，请在标签中使用感叹号(!)来指示换行的位置。
+
+    ```
+    DEFINE VARIABLE credit-percent AS INTEGER NO-UNDO  
+    COLUMN-LABEL "Enter   !percentage!increase ".
+
+    FOR EACH Customer:
+    DISPLAY Customer.Name Customer.CreditLimit.
+    SET credit-percent.
+    Customer.CreditLimit = (Customer.CreditLimit *     
+        (credit-percent / 100)) + Customer.CreditLimit.
+    DISPLAY Customer.CreditLimit @ new-credit LIKE Customer.CreditLimit    
+        LABEL "New max cred".
+    END.
+    ```
+
+    ```
+    FOR EACH Customer NO-LOCK:  
+    DISPLAY Customer.Name COLUMN-LABEL "Customer!Name"    
+    Customer.SalesRep COLUMN-LABEL "Name of!Sales!Representative".
+    END.
+    ```
+
+18. `COLUMN` Option
+
+    ```
+    DEFINE VARIABLE paid-owed AS DECIMAL NO-UNDO.
+    DEFINE VARIABLE bal-label AS CHARACTER NO-UNDO FORMAT "x(20)".
+    FOR EACH Customer NO-LOCK:
+    paid-owed = Customer.Balance.
+    IF paid-owed < 0 /* Customer has a credit */ THEN DO:
+    paid-owed = - paid-owed.
+    bal-label = "Customer Credit".
+    END.
+    ELSE bal-label = "Unpaid balance".
+    DISPLAY Customer.CustNum Customer.Name paid-owed LABEL " " WITH 1 DOWN.
+    IF Customer.Balance < 0 THEN
+    PUT SCREEN COLOR MESSAGES ROW 2 COLUMN 36 bal-label.
+    ELSE 
+    PUT SCREEN ROW 2 COLUMN 36  bal-label.
+    END.
+    ```
+
+19. `COMPILE` statement  
+
+20. `CONNECT` statement
+
+21. `CONNECTED` function
+
+    Tells whether a database is connected.  If logical name is the logical name or alias is the alias of a connected database, the CONNECTED function returns TRUE;  otherwise, it returns FALSE.
+
+    表示数据库是否已连接。如果逻辑名称是逻辑名称或别名是连接数据库的别名，则connected函数返回TRUE;否则，返回FALSE。
+
+    ```
+    IF CONNECTED("sports2000") THEN RUN r-dispcu.p.
+    ```
+
+22. `CREATE` statement
     
+    Creates a record in a table, sets all the fields in the record to their default initial values, and moves a copy of the record to the record buffer.
+
+    在表中创建一条记录，将记录中的所有字段设置为默认初始值，并将记录的副本移动到记录缓冲区。
+
+    ```
+    REPEAT:
+      CREATE Order.
+      UPDATE Order.OrderNum Order.CustNum 
+        VALIDATE(CAN-FIND(Customer OF Order), "Customer does not exist")
+        Order.CustNum Order.OrderDate.
+      REPEAT:
+        CREATE OrderLine.
+        OrderLine.OrderNum = Order.OrderNnum.
+        UPDATE OrderLine.LineNum OrderLine.ItemNum 
+          VALIDATE(CAN-FIND(Item OF OrderLine), "Item does not exist")
+          OrderLine.Qty OrderLine.Price.
+      END.
+    END.
+    ```
+
 
 
 
