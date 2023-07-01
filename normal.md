@@ -391,6 +391,151 @@
     END.
     ```
 
+23. `DATE` function
+    ```
+    DEFINE VARIABLE cnum AS CHARACTER NO-UNDO FORMAT "x(3)".
+    DEFINE VARIABLE cdate AS CHARACTER NO-UNDO FORMAT "x(16)".
+    DEFINE VARIABLE iday AS INTEGER NO-UNDO.
+    DEFINE VARIABLE imon AS INTEGER NO-UNDO.
+    DEFINE VARIABLE iyr AS INTEGER NO-UNDO.
+    DEFINE VARIABLE ddate AS DATE NO-UNDO.
+    INPUT FROM VALUE(SEARCH("r-date.dat")).
+    REPEAT:
+    SET cnum cdate.
+    ASSIGN
+    imon = INTEGER(SUBSTR(cdate,1,2))
+    iday = INTEGER(SUBSTR(cdate,4,2))
+    iyr = INTEGER(SUBSTR(cdate,7,2))
+    /* Works for years within 50 of 2000 */
+    iyr = iyr + (IF (iyr < 50) THEN 2000 ELSE 1900)
+    ddate = DATE(imon,iday,iyr).
+    DISPLAY ddate.
+    END.
+    INPUT CLOSE.
+    ```
+
+24. `DATETIME` function
+
+    Converts date and time values, or a character string, into a DATETIME value.
+
+    将日期和时间值或字符串转换为DATETIME值。
+
+    ```
+    DEFINE VARIABLE my-datetime AS DATETIME NO-UNDO.
+    /* This statement is equivalent to "my-datetime = NOW". */
+    my-datetime = DATETIME(TODAY, MTIME).
+    disp my-datetime.
+
+    my-datetime = DATETIME(5, 5, 2002, 7, 15, 3).
+    disp my-datetime.
+
+    my-datetime = DATETIME("05-05-2002 07:15:03").
+    disp my-datetime.
+    ```
+
+
+25. `DAY` function
+
+    Evaluates a date expression and returns a day of the month as an INTEGER value from 1 to 31, inclusive.
+
+    计算一个日期表达式并返回一个从1到31(包括31)的整数值。
+
+    ```
+    DEFINE VARIABLE d1 AS DATE NO-UNDO LABEL "Date".
+    DEFINE VARIABLE d2 AS DATE NO-UNDO LABEL "Same date next year".
+    DEFINE VARIABLE d-day AS INTEGER NO-UNDO.
+    DEFINE VARIABLE d-mon AS INTEGER NO-UNDO.
+    REPEAT:
+    SET d1.
+    d-day = DAY(d1).
+    d-mon = MONTH(d1).
+    IF d-mon = 2 AND d-day = 29 THEN d-day = 28.
+    d2 = DATE(d-mon,d-day,YEAR(d1) + 1).
+    DISPLAY d2.
+    END.
+    ```
+
+26. `DBNAME` function
+    ```
+    DEFINE VARIABLE pageno AS INTEGER NO-UNDO FORMAT "zzz9" INITIAL 1.
+    FORM HEADER "Date:" TO 10 TODAY
+    "Page:" AT 65 pageno SKIP
+    "Database:" TO 10 DBNAME FORMAT "x(60)" SKIP
+    "Userid:" TO 10 USERID WITH NO-BOX NO-LABELS.
+    VIEW.
+    ```
+
+27. `DECIMAL` function
+
+    Converts an expression of any data type, with the exception of BLOB, CLOB, and RAW, to a DECIMAL value.
+
+    将任何数据类型的表达式(BLOB、CLOB和RAW除外)转换为DECIMAL值。
+
+    ```
+    DEFINE VARIABLE new-max AS CHARACTER NO-UNDO FORMAT "x(10)".
+
+    REPEAT:
+        PROMPT-FOR Customer.CustNum WITH FRAME credit.
+        FIND Customer USING Customer.CustNum.
+        DISPLAY Customer.CustNum Customer.Name Customer.CreditLimit 
+            WITH FRAME credit DOWN.
+        DISPLAY "Enter one of:" SKIP(1)
+            "a = 5000" SKIP
+            "b = 2000" SKIP
+            "RETURN = 1000"
+            "A dollar value"
+            WITH FRAME vals COLUMN 60.
+        SET new-max WITH FRAME credit.
+            IF new-max = "a" THEN Customer.CreditLimit = 5000.
+        ELSE IF new-max = "b" THEN Customer.CreditLimit = 2000.
+        ELSE IF new-max > "0" AND new-max < "999,999.99" THEN
+            Customer.CreditLimit = DECIMAL(new-max).
+        ELSE Customer.CreditLimit = 1000.
+        DISPLAY Customer.CreditLimit WITH FRAME credit.
+    END.
+    ```
+
+28. `DEFINE VARIABLE` statement
+
+    Defines a variable for use in one or more procedures, a variable data member of a class for use in a single class or class hierarchy, or by other classes and procedures, or a variable data element for use within a single class-based method.
+
+    定义一个变量，用于一个或多个过程;定义一个类的变量数据成员，用于单个类或类层次结构，或由其他类和过程使用;定义一个变量数据元素，用于单个基于类的方法。
+
+29. `DEFINE STREAM` statement    ======
+    
+    Defines a stream for use in one or more procedures, or within a single class.  Use this statement when you want to use streams other than the two ABL built-in unnamed streams.  Using additional streams allows you to get input from more than one source simultaneously or to send output to more than one destination simultaneously.
+   
+   定义在一个或多个过程中或在单个类中使用的流。当您希望使用两个ABL内置未命名流以外的流时，请使用此语句。使用额外的流允许您同时从多个源获取输入，或者同时将输出发送到多个目的地。
+
+30. `DEFINE BUFFER` statement
+
+    ABL provides you with one default buffer for each table or temp-table that you use in a procedure or class.  ABL uses that buffer to store one record at a time from the table as the records are needed during the procedure or class.  If you need more than one record or buffer at a time for a table, you can use this statement to define alternate buffers that are created at compile time for use in one or more procedures, or within a single class or class hierarchy.
+
+    ABL为您在过程或类中使用的每个表或临时表提供一个默认缓冲区。ABL使用该缓冲区来存储表中每次需要的一条记录，因为在过程或类中需要这些记录。如果一个表一次需要多个记录或缓冲区，则可以使用此语句来定义在编译时创建的备用缓冲区，以便在一个或多个过程中，或在单个类或类层次结构中使用。
+
+    ```
+    DEFINE BUFFER other-cust FOR Customer.
+    FORM Customer WITH FRAME cre-cust.
+    ON LEAVE OF Customer.PostalCode DO:
+    FIND FIRST other-cust 
+    WHERE other-cust.PostalCode = Customer.PostalCode:SCREEN-VALUE 
+    AND other-cust.CustNum <> Customer.CustNum NO-ERROR.
+    IF AVAILABLE other-cust THEN
+    DISPLAY other-cust.City @ Customer.City
+    other-cust.State @ Customer.State 
+    other-cust.Country @ Customer.Country
+    WITH FRAME cre-cust. 
+    ENABLE Customer.City Customer.State Customer.Country WITH FRAME cre-cust.
+    END.
+    CREATE Customer.
+    UPDATE Customer EXCEPT Customer.City Customer.State Customer.Country
+    WITH FRAME cre-cust.
+    ```
+
+
+
+
+
 
 
 
