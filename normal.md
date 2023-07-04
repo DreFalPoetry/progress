@@ -532,7 +532,85 @@
     WITH FRAME cre-cust.
     ```
 
+31. `DEFINE FRAME` statement
 
+    Defines and creates a frame or dialog box that is created at compile time for use in one or more procedures, or within a single class.
+
+    定义并创建在编译时创建的框架或对话框，以便在一个或多个过程中或在单个类中使用。
+
+    ```
+    DEFINE VARIABLE bal-avail NO-UNDO LIKE Customer.Balance
+      COLUMN-LABEL "Available!Credit" NO-UNDO.
+    DEFINE FRAME cust-bal 
+      Customer.CustNum
+      Customer.Name FORMAT "X(20)"
+      Customer.CreditLimit LABEL "Limit"
+      Customer.Balance
+      bal-avail
+      WITH CENTERED ROW 3 TITLE "Available Customer Credit" USE-TEXT.
+    FOR EACH Customer NO-LOCK WITH FRAME cust-bal:
+      DISPLAY 
+        Customer.CustNum
+        Customer.Name
+        Customer.CreditLimit
+        Customer.Balance
+        Customer.CreditLimit - Customer.Balance @ bal-avail.
+    END.
+    ```
+
+    ```
+    DEFINE BUTTON b_dtl LABEL "Detail".
+    DEFINE BUTTON b_next LABEL "Next".
+    DEFINE BUTTON b_quit LABEL "Quit" AUTO-ENDKEY.
+
+
+    DEFINE FRAME cust-info 
+    Customer.CustNum
+    Customer.Name FORMAT "X(20)"
+    Customer.Phone
+    WITH CENTERED ROW 4.
+
+    DEFINE FRAME cust-dtl
+    Customer.Address Customer.Address2  Customer.EmailAddress Customer.PostalCode
+    WITH CENTERED SIDE-LABELS ROW 9.
+
+    DEFINE FRAME butt-frame
+        b_dtl b_next b_quit
+        WITH ROW 1.
+
+    ON CHOOSE OF b_dtl
+        DISPLAY Customer.Address Customer.Address2  Customer.EmailAddress Customer.PostalCode
+        WITH FRAME cust-dtl.
+
+    ON CHOOSE OF b_next DO:
+        HIDE FRAME cust-dtl.
+        FIND NEXT Customer NO-LOCK NO-ERROR.
+        IF NOT AVAILABLE Customer THEN
+            FIND LAST Customer NO-LOCK.
+            
+        DISPLAY Customer.CustNum Customer.Name Customer.Phone
+            WITH FRAME cust-info.
+    END.
+
+    ENABLE ALL WITH FRAME butt-frame.
+
+    APPLY "CHOOSE" TO b_next IN FRAME butt-frame.
+    WAIT-FOR CHOOSE OF b_quit. 
+    ```
+
+32. `DEFINE TEMP-TABLE` statement
+
+    创建临时表
+
+33. `DEFINE PARAMETER` statement
+    
+    参数定义
+
+34. `DELETE` statement
+    
+    从记录缓冲区和数据库中删除一条记录。
+
+35. `DELIMITER` option
 
 
 
