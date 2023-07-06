@@ -612,7 +612,26 @@
 
 35. `DELIMITER` option
 
+36. `DESCENDING` option 
+    
+    按照降序对记录进行排序
 
+37. `DISABLE` statement
+
+38. `DISCONNECT` statement
+
+    Disconnects the specified database.
+
+    断开指定数据库的连接。
+    ```
+    DISCONNECT mydb.
+    ```
+39. `DISPLAY` statement
+
+    输出显示
+
+40. `DO` statement
+    
 
 
 
