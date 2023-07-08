@@ -690,6 +690,23 @@
     END.
     OUTPUT STREAM due CLOSE.  
     ```
+43. `EMPTY TEMP-TABLE` statement
+    ```
+    EMPTY TEMP-TABLE temp-table-name
+    ```
+44. `ENCODE` function
+    ```
+    DEFINE VARIABLE password      AS CHARACTER NO-UNDO FORMAT "x(16)".
+    DEFINE VARIABLE id            AS CHARACTER NO-UNDO FORMAT "x(12)".
+    DEFINE VARIABLE n-coded-p-wrd AS CHARACTER NO-UNDO FORMAT "x(16)". 
+
+    SET id LABEL "Enter user id" password LABEL  
+        "Enter password" BLANK WITH CENTERED SIDE-LABELS. 
+        
+    n-coded-p-wrd = ENCODE(password). 
+
+    DISPLAY n-coded-p-wrd LABEL "Encoded password".
+    ```
 
 
 
