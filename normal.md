@@ -631,7 +631,66 @@
     输出显示
 
 40. `DO` statement
-    
+
+    Groups statements into a single block, optionally specifying processing services or block properties. Use an END statement to end a DO block.
+
+    将语句分组到单个块中，可以选择指定处理服务或块属性。使用END语句结束DO块。
+
+    ```
+    FOR EACH Customer NO-LOCK:  
+    DISPLAY Customer.Name Customer.CreditLimit.  
+    PAUSE 3.  
+    IF Customer.CreditLimit > 80000 THEN DO:    
+        Customer.CreditLimit = 80000.    
+        DISPLAY Customer.Name Customer.CreditLimit.  
+     END.
+    END.
+    ```
+
+41. `DOWN` statement
+
+    Positions the cursor on a new line in a down or multi-line frame.
+
+42. `IF...THEN...ELSE` statement
+    ```
+    DEFINE VARIABLE ans AS LOGICAL NO-UNDO.
+    DEFINE STREAM due.
+    OUTPUT STREAM due TO E:/p/ovrdue.lst.
+    DISPLAY STREAM due
+        "Orders shipped but still unpaid as of" TODAY SKIP(2)
+        WITH NO-BOX NO-LABELS CENTERED FRAME hdr PAGE-TOP.
+
+    FOR EACH Order WITH FRAME oinfo:
+        FIND Customer OF Order NO-LOCK.
+        DISPLAY Order.OrderNum Customer.Name Order.OrderDate Order.PromiseDate
+            Order.ShipDate.
+        IF Order.ShipDate = ? THEN DO:
+            IF Order.PromiseDate = ? THEN DO:
+                MESSAGE "Please update the promise date.".
+                REPEAT WHILE promiseDate = ?:
+                    UPDATE  Order.PromiseDate WITH FRAME oinfo.
+                END.
+            END.
+            ans = FALSE.
+            MESSAGE "Has this order been shipped?" UPDATE ans.  
+            IF ans THEN
+            REPEAT WHILE Order.ShipDate = ?:
+                UPDATE Order.ShipDate WITH FRAME oinfo.
+            END.
+        END.    
+        ELSE DO:
+            ans = TRUE.
+            MESSAGE "Has this order been paid?" UPDATE ans.
+            IF NOT ans THEN DO:
+                DISPLAY STREAM due Order.OrderNum TO 14 Customer.Name AT 18
+                    Order.OrderDate AT 42 Order.ShipDate AT 54
+                    WITH NO-BOX DOWN FRAME unpaid.
+            END.
+        END.
+    END.
+    OUTPUT STREAM due CLOSE.  
+    ```
+
 
 
 
