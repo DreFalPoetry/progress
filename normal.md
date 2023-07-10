@@ -708,6 +708,133 @@
     DISPLAY n-coded-p-wrd LABEL "Encoded password".
     ```
 
+45. `ENTRY` function
+    
+    Returns a character string (CHARACTER or LONGCHAR) entry from a list based on an integer position.
+
+    从基于整数位置的列表中返回一个字符串(character或LONGCHAR)条目。
+
+    ```
+    DEFINE VARIABLE datein AS DATE NO-UNDO.
+    DEFINE VARIABLE daynum AS INTEGER NO-UNDO.
+    DEFINE VARIABLE daynam AS CHARACTER NO-UNDO INITIAL "Sunday,
+    Monday, Tuesday, Wednesday, Thursday, Friday, Saturday".
+
+    SET datein LABEL "Enter a date (mm/dd/yy)".
+
+    daynum = WEEKDAY(datein).
+    DISPLAY ENTRY(daynum,daynam) FORMAT "x(9)" LABEL "is a" WITH SIDE-LABELS.
+    ```
+
+    ```
+    DEFINE VARIABLE typeface AS CHARACTER NO-UNDO.
+    typeface = "-adobe-helvetica-bold-r-normal--*-210-*-*-*-*-iso*-*".
+    DISPLAY ENTRY(3, typeface, "-") FORMAT "x(16)".
+    ```
+
+46. `ETIME` function
+
+    Returns, as an INT64 value, the time (in milliseconds) elapsed since the ABL session began or since ETIME (elapsed time) was last set to 0.  To set ETIME to 0, pass it a positive logical value, such as YES or TRUE.
+
+    作为INT64值返回自ABL会话开始或自ETIME(运行时间)最后设置为0以来所经过的时间(以毫秒为单位)。要将ETIME设置为0，需要向其传递一个正的逻辑值，如YES或TRUE。
+    
+    ```
+    DISPLAY ETIME.
+    ```
+
+    ```
+    DEFINE VARIABLE a AS INT64 NO-UNDO.
+    DO:
+      a = ETIME(yes).
+      RUN applhelp.p.
+      DISPLAY ETIME.
+    END.
+    ```
+
+47. `EXCLUSIVE-LOCK` option
+
+    独占锁
+
+48. `EXPORT` statement
+    
+    Converts data to a standard character format and displays it to the current output destination (except when the current output destination is the screen) or to a named output stream. You can use data exported to a file in standard format as input to other ABL procedures.
+
+    将数据转换为标准字符格式，并将其显示到当前输出目的地(除非当前输出目的地是屏幕)或指定的输出流。您可以使用以标准格式导出到文件的数据作为其他ABL过程的输入。
+
+    ```
+    OUTPUT TO E:/p/stream/customer.d.
+    FOR EACH Customer NO-LOCK:
+    EXPORT Customer.
+    END.
+    OUTPUT CLOSE.
+    ```
+
+    ```
+    OUTPUT TO E:/p/stream/custdump.
+    FOR EACH Customer NO-LOCK:
+    EXPORT Customer.CustNum Customer.Name Customer.CreditLimit.
+    END.
+    OUTPUT CLOSE.
+    ```
+
+49. `EXTENT` option
+
+    ```
+    DEFINE VARIABLE array-var AS CHARACTER NO-UNDO EXTENT 3   INITIAL ["Add","Delete","Update"].
+    ```
+
+50. `FILL` function
+    
+    Generates a character string made up of a character string that is repeated a specified number of times.
+
+    生成由重复指定次数的字符串组成的字符串。
+
+    语法:
+    ```
+    FILL ( expression , repeats )
+    ```
+    ```
+    DEFINE VARIABLE fillchar AS CHARACTER NO-UNDO FORMAT "x" INITIAL "*".
+    DEFINE VARIABLE percentg AS INTEGER NO-UNDO FORMAT ">>9".
+    FOR EACH Customer NO-LOCK:
+    ACCUMULATE Customer.Balance (TOTAL).
+    END.
+    DISPLAY "Percentage of Outstanding Balance" WITH CENTERED NO-BOX.
+    FOR EACH Customer NO-LOCK WHERE Customer.Balance > 0:
+    percentg = Customer.Balance / (ACCUM TOTAL Customer.Balance) * 100.
+    FORM SKIP Customer.Name percentg LABEL "%" bar AS CHARACTER
+    LABEL " 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17"
+    FORMAT "x(50)" WITH NO-BOX NO-UNDERLINE USE-TEXT.
+    COLOR DISPLAY BRIGHT-RED bar.
+    DISPLAY Customer.Name percentg FILL(fillchar,percentg * 3) @ bar.
+    END.
+    ```
+51. `FIND` statement
+
+    Locates a single record in a table and moves that record into a record buffer.
+
+    定位表中的单个记录并将该记录移动到记录缓冲区中。
+
+    ```
+    FIND Customer 1.
+
+    FIND Customer WHERE Customer.CustNum = 1.
+    ```
+
+52. `FOR` statement
+
+    Starts an iterating block that reads a record from each of one or more tables at the start of each block iteration.  Use an END statement to end a FOR block.
+
+    启动一个迭代块，在每个块迭代开始时从一个或多个表中读取一条记录。使用END语句结束FOR块。
+
+    ```
+    FOR FIRST Customer NO-LOCK BY Customer.CreditLimit:  DISPLAY Customer.END.
+    ```
+
+    ```
+    FOR EACH Customer NO-LOCK BY Customer.CreditLimit:  DISPLAY Customer.  LEAVE.END.
+    ```
+    
 
 
 
