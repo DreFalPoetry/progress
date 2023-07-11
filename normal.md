@@ -835,6 +835,70 @@
     FOR EACH Customer NO-LOCK BY Customer.CreditLimit:  DISPLAY Customer.  LEAVE.END.
     ```
     
+53. `FORM` statement
+    ```
+    REPEAT FOR Customer:
+      FORM 
+        Customer.Name COLON 10 Customer.Phone COLON 50
+        Customer.Address COLON 10 Customer.SalesRep COLON 50 SKIP
+        Customer.City COLON 10 NO-LABEL Customer.State NO-LABEL 
+        Customer.PostalCode NO-LABEL
+        WITH SIDE-LABELS 1 DOWN CENTERED.
+        PROMPT-FOR Customer.CustNum WITH FRAME cnum SIDE-LABELS CENTERED.
+      FIND Customer USING Customer.CustNum.
+      UPDATE Customer.Name Customer.Address Customer.City Customer.State
+      Customer.PostalCode Customer.Phone Customer.SalesRep.
+    END.
+    ```
+
+54. `FORMAT` option
+
+    Defines or declares a prototype for a user-defined function, or declares a Web service operation. The following syntax boxes describe the syntax for each use of the statement, beginning with a user-defined function definition.
+
+    定义或声明用户定义函数的原型，或声明Web服务操作。下面的语法框描述了语句的每种用法的语法，从用户定义的函数定义开始。
+
+    ```
+    /* r-udf1.p */
+    /* Defines and references a user-defined function */
+    /* Define doubler() */
+    FUNCTION doubler RETURNS INTEGER (INPUT parm1 AS INTEGER):
+    RETURN (2 * parm1). 
+    END FUNCTION.
+    /* Reference doubler() */
+    DISPLAY "doubler(0)=" doubler(0) SKIP
+    "doubler(1)=" doubler(1) skip
+    "doubler(2)=" doubler(2) skip.
+    ```
+
+55. `HIDE` statement
+    ```
+    DEFINE VARIABLE selection AS INTEGER NO-UNDO FORMAT "9".
+    FORM
+    "Please Make A Selection:" SKIP(2)
+    " 1. Hide Frame A. " SKIP
+    " 2. Hide Frame B. " SKIP
+    " 3. Hide All. " SKIP
+    " 4. Hide This Frame " SKIP
+    " 5. Exit " SKIP(2)
+    WITH FRAME X NO-LABELS.
+    REPEAT:
+    VIEW FRAME x.
+    DISPLAY "This is frame A."
+    WITH FRAME a ROW 1 COLUMN 60.
+    DISPLAY "This is frame B."
+    WITH FRAME b ROW 16 COLUMN 10 4 DOWN.
+    MESSAGE "Make your selection!".
+    UPDATE "Selection: " selection VALIDATE(0 < selection AND selection < 7,
+    "Invalid selection") AUTO-RETURN
+    WITH FRAME x.
+    IF selection = 1 THEN HIDE FRAME a.
+    ELSE IF selection = 2 THEN HIDE FRAME b.
+    ELSE IF selection = 3 THEN HIDE ALL.
+    ELSE IF selection = 4 THEN HIDE FRAME x.
+    ELSE IF selection = 5 THEN LEAVE.
+    PAUSE.
+    END.
+    ```
 
 
 
