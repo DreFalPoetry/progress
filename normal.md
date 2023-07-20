@@ -1100,6 +1100,501 @@
     END.
     ```
 
+67. `LAST` function
+    Syntax 
+    ```
+    LAST ( break-group )
+    ```
+
+    ```
+    FOR EACH Item NO-LOCK BY Item.OnHand * Item.Price DESCENDING:
+    DISPLAY Item.ItemNum Item.OnHand * Item.Price (TOTAL) LABEL "Value-oh"
+    WITH USE-TEXT.
+    END.
+    FOR EACH Item NO-LOCK BREAK BY Item.OnHand * Item.Price DESCENDING:
+    FORM Item.ItemNum value-oh AS DECIMAL LABEL "Value-oh" 
+    WITH COLUMN 40 USE-TEXT.
+    DISPLAY Item.ItemNum Item.OnHand * Item.Price @ value-oh.
+    ACCUMULATE Item.OnHand * Item.Price (TOTAL).
+    IF LAST(Item.OnHand * Item.Price) THEN DO:
+    UNDERLINE value-oh.
+    DISPLAY ACCUM TOTAL Item.OnHand * Item.Price @ value-oh.
+    END.
+    END.
+    ```
+
+68. `LC` function
+
+    Converts any uppercase characters in a CHARACTER or LONGCHAR expression to lowercase characters, and returns the result.
+
+    将CHARACTER或LONGCHAR表达式中的任何大写字符转换为小写字符，并返回结果。
+
+    ```
+    REPEAT:
+    PROMPT-FOR Customer.CustNum.
+    FIND Customer USING Customer.CustNum.
+    DISPLAY Customer.Name.
+    UPDATE Customer.SalesRep.
+    Customer.SalesRep = CAPS(SUBSTRING(Customer.SalesRep, 1, 1) ) +
+    LC(SUBSTRING(Customer.SalesRep, 2) ).
+    DISPLAY Customer.SalesRep.
+    END.
+    ```
+
+69. `LDBNAME` function
+
+    Returns the logical name of a database that is currently connected.
+
+    返回当前连接的数据库的逻辑名称。
+
+    ```
+    DEFINE VARIABLE testnm AS CHARACTER NO-UNDO.
+    SET testnm.
+    IF LDBNAME(testnm) = testnm THEN 
+    MESSAGE testnm "is a true logical database name.".
+    ELSE IF LDBNAME(testnm) = ? THEN 
+    MESSAGE testnm "is not the name or alias of any connected database.".
+    ELSE 
+    MESSAGE testnm "is an ALIAS for database " LDBNAME(testnm).
+    ```
+
+70. `LEAVE` statement
+    
+    Exits from a block.  Execution continues with the first statement after the end of the block.
+
+    退出一个块。继续执行结束后的第一个语句。
+
+    ```
+    DEFINE VARIABLE valid-choice AS CHARACTER NO-UNDO INITIAL "NPFQ".
+    DEFINE VARIABLE selection AS CHARACTER NO-UNDO FORMAT "x".
+    main-loop:
+    REPEAT:
+    choose:
+    REPEAT ON ENDKEY UNDO choose, RETURN:
+    MESSAGE "(N)ext (P)rev (F)ind (Q)uit"
+    UPDATE selection AUTO-RETURN.
+    /* Selection was valid */
+    IF INDEX(valid-choice, selection) <> 0 THEN LEAVE choose.
+    BELL.
+    END. /* choose */
+    /* Processing for menu choices N, P, F here */
+    IF selection = "Q" THEN LEAVE main-loop.
+    END. /* REPEAT */
+    ```
+
+71. `LEFT-TRIM` function
+
+    Removes leading white space, or other specified characters, from a CHARACTER or LONGCHAR expression.
+
+    从CHARACTER或LONGCHAR表达式中删除前导空格或其他指定字符。
+
+    ```
+    DEFINE VARIABLE txt AS CHARACTER NO-UNDO FORMAT "X(26)"   INITIAL "***** This is a test *****".
+
+    DISPLAY LEFT-TRIM(txt,"* ") FORMAT "x(26)". 
+    ```
+
+72. `LENGTH` statement
+
+    Changes the number of bytes in a raw variable.
+
+    更改原始变量中的字节数。
+
+    ```
+    /* You must connect to a non-OpenEdge demo database to run this procedure */
+    DEFINE VARIABLE r1 as RAW NO-UNDO.
+    FIND Customer NO-LOCK WHERE Customer.CustNum = 29.
+    r1 = RAW(Customer.Name).
+    LENGTH(r1) = 2.
+    ```
+
+73. `LOCKED` function
+
+    Returns a TRUE value if a record is not available to a prior FIND . . . NO-WAIT statement because another user has locked a record.
+
+    ```
+    REPEAT:
+    PROMPT-FOR Customer.CustNum.
+    FIND Customer USING Customer.CustNum NO-ERROR NO-WAIT.
+    IF NOT AVAILABLE Customer THEN DO:
+    IF LOCKED Customer THEN 
+    MESSAGE "Customer record is locked".
+    ELSE 
+    MESSAGE "Customer record was not found".
+    NEXT.
+    END.
+    DISPLAY Customer.CustNum Customer.Name Customer.City Customer.State.
+    END.
+    ```
+
+74. `LOGICAL` function
+
+    Converts any data type into the LOGICAL data type.
+
+    ```
+    DEFINE VARIABLE mychar AS CHARACTER NO-UNDO. 
+    DEFINE VARIABLE v-log  AS LOGICAL   NO-UNDO.
+
+    mychar = "sii".
+
+    v-log = LOGICAL(mychar, "sii/no").
+    DISPLAY v-log.
+    ```
+    
+75. `LOOKUP` function
+
+    Returns an INTEGER value giving the position of an expression in a list. Returns a 0 if the expression is not in the list.
+
+    ```
+    DEFINE VARIABLE stlist AS CHARACTER NO-UNDO
+    INITIAL "ME,MA,VT,RI,CT,NH".
+    DEFINE VARIABLE state AS CHARACTER NO-UNDO FORMAT "x(2)".
+    REPEAT:
+    SET state LABEL "Enter a New England state, 2 characters".
+    IF LOOKUP(state, stlist) = 0 THEN 
+    MESSAGE "This is not a New England state".
+    END.
+    ```
+
+76. `MATCHES` operator
+
+    ```
+    FOR EACH Customer NO-LOCK WHERE Customer.Address MATCHES("*St"):
+    DISPLAY Customer.Name Customer.Address Customer.City Customer.State
+    Customer.Country.
+    END.
+    ```
+77. `MAXIMUM` function
+
+    Compares two or more values and returns the largest value.
+
+    ```
+    DEFINE VARIABLE cred-lim2 AS DECIMAL NO-UNDO FORMAT ">>,>>9.99".
+    FOR EACH Customer NO-LOCK:
+    cred-lim2 = IF Customer.CreditLimit < 20000 THEN
+    Customer.CreditLimit + 10000 ELSE 30000.
+    DISPLAY Customer.CreditLimit cred-lim2
+    MAXIMUM(cred-lim2, Customer.CreditLimit) 
+    LABEL "Maximum of these two values".
+    END.
+    ```
+
+78. `MESSAGE` statement
+    ```
+    REPEAT:
+    PROMPT-FOR Customer.CustNum.
+    FIND Customer USING Customer.CustNum NO-ERROR.
+    IF NOT AVAILABLE Customer THEN DO:
+    MESSAGE "Customer with CustNum " INPUT Customer.CustNum
+    " does not exist. Please try another".
+    UNDO, RETRY.
+    END.
+    ELSE
+    DISPLAY Customer.Name Customer.SalesRep.
+    END.
+    ```
+
+79. `MINIMUM` function
+
+    Compares two or more values and returns the smallest.
+
+80. `MODULO` operator
+
+    求余
+
+    ```
+    REPEAT:
+    SET qty-avail AS INTEGER LABEL "Qty. Avail.".
+    SET std-cap AS INTEGER LABEL "Std. Truck Capacity".
+    DISPLAY TRUNCATE(qty-avail / std-cap,0) FORMAT ">,>>9" LABEL "# Full Loads"
+    qty-avail MODULO std-cap LABEL "Qty. Left".
+    END.
+    ```
+
+81. `MONTH` function
+
+    Evaluates a date expression and returns a month INTEGER value from 1 to 12, inclusive.
+
+    ```
+    FOR EACH Order NO-LOCK:
+    IF (MONTH(Order.PromiseDate) < MONTH(TODAY) OR
+    YEAR(Order.PromiseDate) < YEAR(TODAY)) AND Order.ShipDate = ? THEN 
+    DISPLAY Order.OrderNum LABEL "Order Num" Order.PO LABEL "P.O. Num"
+    Order.PromiseDate LABEL "Promised By"
+    Order.OrderDate LABEL "Ordered" terms
+    WITH TITLE "These orders are overdue".
+    END.
+    ```
+
+82. `MTIME` function
+
+    Returns an INTEGER value representing the time in milliseconds. If the MTIME function has no arguments, it returns the current number of milliseconds since midnight (similar to TIME, which returns seconds since midnight).
+
+    返回以毫秒为单位表示时间的INTEGER值。如果MTIME函数没有参数，它返回从午夜开始的当前毫秒数(类似于TIME，它返回从午夜开始的秒数)。
+
+83. `NEW SHARED` option
+
+84. `NEXT` statement
+
+    Goes directly to the END of an iterating block and starts the next iteration of the block.
+
+    直接转到迭代块的END，并开始该块的下一次迭代。
+
+    ```
+    PROMPT-FOR Customer.SalesRep LABEL "Enter salesman initials"
+    WITH SIDE-LABELS CENTERED.
+    FOR EACH Customer:
+    IF Customer.SalesRep <> INPUT Customer.SalesRep THEN NEXT.
+    DISPLAY Customer.CustNum Customer.Name Customer.City Customer.State 
+    WITH CENTERED USE-TEXT.
+    END.
+    ```
+
+85. `NEXT-PROMPT` statement 
+
+    ```
+    FOR EACH Customer:
+    UPDATE Customer.Name Customer.Contact Customer.SalesRep  WITH 2 COLUMNS.
+    IF Customer.Contact EQ " " THEN DO:
+    MESSAGE "You must enter a contact".
+    NEXT-PROMPT Customer.Contact.
+    UNDO, RETRY.
+    END.
+    END.
+    ```
+
+86. `NEXT-VALUE` function
+
+    Returns the next INT64 value of a static sequence, incremented by the positive or 
+negative value defined in the Data Dictionary
+
+返回静态序列的下一个INT64值，以数据字典中定义的正值或负值递增
+
+     ```
+     TRIGGER PROCEDURE FOR Create OF Item.
+    /* Automatically assign a unique item number using NextItemNum seq */
+    ASSIGN Item.ItemNum = NEXT-VALUE(NextItemNum).
+     ```
+
+87. `NO-MESSAGE` option
+
+    Tells the AVM to pause but not to display a message on the status line of the terminal screen.
+
+88. `NO-PAUSE` option
+
+    Does not pause before clearing the frame.
+
+89. `NOW` function
+
+    Returns the current system date, time, and time zone as a DATETIME-TZ value.
+
+    以DATETIME-TZ值返回当前系统日期、时间和时区。
+
+    ```
+    DEFINE VARIABLE v-datetime    AS DATETIME    NO-UNDO.
+    DEFINE VARIABLE v-datetime-tz AS DATETIME-TZ NO-UNDO.
+
+    ASSIGN
+      v-datetime    = NOW
+      v-datetime-tz = NOW.
+    ```
+90. `NO-WAIT` option
+
+    Causes FIND to return immediately and raise an error condition if the record is locked by another user (unless you use the NO-ERROR option on the same FIND statement). For example:
+
+    ```
+    FIND Customer USING cust-name NO-ERROR NO-WAIT.
+    ```
+
+    Without the NO-WAIT option, the AVM waits until the record is available.
+
+    -------------------------
+    Specifies that the GET statement returns immediately if the record cannot be accessed because it is locked by another user.  If you do not use the NO-WAIT option, the GET statement waits until the record can be accessed.  This applies to all buffers in a join.  If you specify NO-WAIT and the record is locked by another user, the record is returned to you with NO-LOCK and the LOCKED function returns TRUE for the record.
+
+    指定如果记录因被其他用户锁定而无法访问，则GET语句立即返回。如果不使用NO-WAIT选项，GET语句将一直等待，直到可以访问记录。这适用于连接中的所有缓冲区。如果您指定了NO-WAIT，并且该记录被其他用户锁定，则该记录将以NO-LOCK返回给您，并且locked函数将该记录返回TRUE。
+
+91. `NUM-DBS` function
+
+    Takes no arguments; returns the number of connected databases as an INTEGER value.
+    不需要参数;以整数值形式返回已连接数据库的数目。
+
+    ```
+    DEFINE VARIABLE ix AS INTEGER NO-UNDO.
+    REPEAT ix = 1 TO NUM-DBS:
+    DISPLAY LDBNAME(ix) DBRESTRICTIONS(ix) FORMAT "x(40)".
+    END.
+    ```
+92. `NUM-ENTRIES` function
+
+    Returns the number of elements in a list of character strings as an INTEGER value.
+
+    以INTEGER值的形式返回字符串列表中的元素个数。
+
+    ```
+    DEFINE VARIABLE ix AS INTEGER NO-UNDO.
+    DEFINE VARIABLE regions AS CHARACTER NO-UNDO 
+    INITIAL "Northeast,Southest,Midwest,Northwest,Southwest".
+    REPEAT ix = 1 TO NUM-ENTRIES(regions):
+    DISPLAY ENTRY(ix, regions) FORMAT "x(12)".
+    END.
+    ```
+93. `OPSYS` function
+
+    Identifies the operating system being used, so that a single version of a procedure can work differently under different operating systems. Returns the value of that operating system. Valid values are “UNIX” and “WIN32".
+
+    标识正在使用的操作系统，以便过程的单一版本可以在不同的操作系统下以不同的方式工作。返回该操作系统的值。取值为UNIX和WIN32。
+
+    ```
+    IF OPSYS = "UNIX" THEN UNIX ls.
+    ELSE IF OPSYS = "WIN32" THEN DOS dir.
+    ELSE MESSAGE OPSYS "is an unsupported operating system".
+    ```
+
+94. `OS-COMMAND` statement
+    Escapes to the current operating system and executes an operating system command.
+    ```
+    DEFINE VARIABLE comm-line AS CHARACTER NO-UNDO FORMAT "x(70)".
+    REPEAT:
+    UPDATE comm-line.
+    OS-COMMAND VALUE(comm-line).
+    END.
+    ```
+
+95. `OS-APPEND` statement   =================!!!
+
+    Executes an operating system file append command from within ABL.
+
+    从ABL中执行操作系统文件附加命令。
+
+
+96. `OS-COPY` statement
+
+    Executes an operating system file copy command from within ABL.
+    从ABL中执行操作系统文件复制命令。
+
+    ```
+    DEFINE VARIABLE sourcefilename AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE copyfilename AS CHARACTER NO-UNDO FORMAT "x(20)" 
+    VIEW-AS FILL-IN.
+    DEFINE VARIABLE OKpressed AS LOGICAL NO-UNDO INITIAL TRUE.
+    Main:
+    REPEAT:
+    SYSTEM-DIALOG GET-FILE sourcefilename
+    TITLE "Choose File to Copy"
+    MUST-EXIST
+    USE-FILENAME
+    UPDATE OKpressed.
+    IF OKpressed = FALSE THEN
+    LEAVE Main.
+    UPDATE copyfilename WITH FRAME copyframe.
+    OS-COPY VALUE(sourcefilename) VALUE(copyfilename).
+    END.
+    ```
+
+97. `OS-CREATE-DIR` statement
+
+    Executes an operating system command from within ABL that creates one or more new directories.
+
+    从ABL中执行一个操作系统命令，该命令创建一个或多个新目录。
+
+    ```
+    DEFINE VARIABLE stat AS INTEGER NO-UNDO.
+    DEFINE VARIABLE dir_name AS CHARACTER NO-UNDO FORMAT "x(64)"
+    LABEL "Enter the name of the directory you want to create.".
+    UPDATE dir_name.
+    OS-CREATE-DIR VALUE(dir_name).
+    stat = OS-ERROR.
+    IF stat NE 0 THEN
+    MESSAGE "Directory not created. System Error #" stat.
+    ```
+98. `OS-DELETE` statement
+
+    Executes an operating system file or directory delete from within ABL.  Can delete one or more files, a directory, or an entire directory branch.
+
+    从ABL中执行操作系统文件或目录删除。可以删除一个或多个文件、一个目录或整个目录分支。
+
+    ```
+    DEFINE VARIABLE filename AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE OKpressed AS LOGICAL NO-UNDO INITIAL TRUE.
+    Main:
+    REPEAT:
+    SYSTEM-DIALOG GET-FILE filename
+    TITLE "Choose File to Delete"
+    MUST-EXIST
+    USE-FILENAME
+    UPDATE OKpressed.
+    IF OKpressed = FALSE THEN LEAVE Main.
+    ELSE OS-DELETE VALUE(filename).
+    END.
+    ```
+
+99. `OS-ERROR` function
+
+    Returns, as an INTEGER value, an ABL error code that indicates whether an execution error occurred during the last OS-APPEND, OS-COPY, OS-CREATE-DIR, OS-DELETE, OS-RENAME or SAVE CACHE statement.
+
+    以INTEGER值返回一个ABL错误码，该错误码表示在最后一次执行OS-APPEND、OS-COPY、OS-CREATE-DIR、OS-DELETE、OS-RENAME或SAVE CACHE语句时是否发生错误。
+
+    ```
+    DEFINE VARIABLE err-status AS INTEGER NO-UNDO.
+    DEFINE VARIABLE filename AS CHARACTER NO-UNDO FORMAT "x(40)"
+    LABEL "Enter a file to delete".
+    UPDATE filename.
+    OS-DELETE VALUE(filename).
+    err-status = OS-ERROR.
+    IF err-status <> 0 THEN
+    CASE err-status:
+    WHEN 1 THEN
+    MESSAGE "You are not the owner of this file or directory.".
+    WHEN 2 THEN 
+    MESSAGE "The file or directory you want to delete does not exist.". 
+    OTHERWISE
+    DISPLAY "OS Error #" + STRING(OS-ERROR,"99") FORMAT "x(13)" 
+    WITH FRAME b.
+    END CASE.
+    ```
+
+
+100. `OS-GETENV` function
+
+      Returns a string that contains the value of the desired environment variable in the 
+      environment in which the ABL session is running.
+      对象中所需环境变量的值
+      运行ABL会话的环境。
+
+      ```
+      DEFINE VARIABLE pathname AS CHARACTER NO-UNDO FORMAT "x(32)"
+      LABEL "The report will be stored in ".
+      DEFINE VARIABLE report_name AS CHARACTER NO-UNDO FORMAT "x(32)"
+      LABEL "Please enter report name." .
+      UPDATE report_name.
+      pathname = OS-GETENV("DLC") + "/" + report_name.
+      DISPLAY pathname WITH FRAME b SIDE-LABELS.
+      ```
+101. `OS-RENAME` statement
+
+     Executes an operating system file rename or directory rename command from within ABL.
+     从ABL中执行操作系统文件重命名或目录重命名命令。
+
+     ```
+      DEFINE VARIABLE sourcefile AS CHARACTER NO-UNDO.
+      DEFINE VARIABLE targetfile AS CHARACTER NO-UNDO FORMAT "x(20)" 
+      VIEW-AS FILL-IN.
+      DEFINE VARIABLE OKpressed AS LOGICAL NO-UNDO INITIAL TRUE.
+      Main:
+      REPEAT:
+      SYSTEM-DIALOG GET-FILE sourcefile
+      TITLE "Choose a File or Directory to Rename"
+      MUST-EXIST
+      USE-FILENAME
+      UPDATE OKpressed.
+      IF OKpressed = FALSE THEN
+      LEAVE Main.
+      UPDATE targetfile WITH FRAME newnameframe.
+      OS-RENAME VALUE(sourcefile) VALUE(targetfile).
+      END.
+     ```
+
+
 
 
 ```
