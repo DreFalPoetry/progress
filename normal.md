@@ -900,6 +900,205 @@
     END.
     ```
 
+56. `IMPORT` statement ======
+
+57. `INDEX` function
+
+    Returns an INTEGER value that indicates the position of the target string within the source string.
+
+    返回一个INTEGER值，该值指示目标字符串在源字符串中的位置。
+    ```
+    DEFINE VARIABLE x AS CHARACTER NO-UNDO FORMAT "9"
+    LABEL "Enter a digit between 1 and 5".
+    DEFINE VARIABLE show AS CHARACTER NO-UNDO FORMAT "x(5)" EXTENT 5 
+    LABEL "Literal" INITIAL ["One", "Two", "Three", "Four", "Five"].
+    REPEAT:
+    SET x AUTO-RETURN.
+    IF INDEX("12345",x) = 0 THEN DO:
+    MESSAGE "Digit must be 1,2,3,4, or 5. Try again.".
+    UNDO, RETRY.
+    END.
+    ELSE DISPLAY show[INTEGER(x)].
+    END.
+    ```
+
+    ```
+    DEFINE VARIABLE positions AS CHARACTER NO-UNDO FORMAT "x(60)".
+    DEFINE VARIABLE sentence AS CHARACTER NO-UNDO FORMAT "x(72)".
+    DEFINE VARIABLE vowel AS CHARACTER NO-UNDO FORMAT "x".
+    DEFINE VARIABLE found AS INTEGER NO-UNDO.
+    DEFINE VARIABLE loop AS INTEGER NO-UNDO.
+    DEFINE VARIABLE start AS INTEGER NO-UNDO.
+    FORM sentence LABEL "Type in a sentence"
+    WITH FRAME top
+    TITLE "This program will tell where the vowels are in a sentence.".
+    SET sentence WITH FRAME top.
+    DO loop = 1 TO 5:
+    ASSIGN
+    positions = ""
+    vowel = SUBSTRING("aeiou",loop,1)
+    start = 1
+    found = INDEX(sentence,vowel,start).
+    DO WHILE found > 0:
+    ASSIGN
+    positions = positions + STRING(found) + " "
+    start = found + 1
+    found = INDEX(sentence,vowel,start).
+    END.
+    DISPLAY vowel LABEL "Vowel" positions LABEL "Is found at locations..." 
+    WITH 5 DOWN.
+    DOWN.
+    END.
+    ```
+
+58.  `INPUT CLOSE` statement
+
+      ```
+      INPUT FROM VALUE(SEARCH("E:/p/source/r-in.dat")).
+      REPEAT:
+      PROMPT-FOR Customer.CustNum Customer.CreditLimit.
+      FIND Customer USING INPUT Customer.CustNum.
+      ASSIGN Customer.CreditLimit.
+      END.
+      INPUT CLOSE.
+      ```
+
+59. `INPUT FROM` statement  如例57 
+
+
+60. `INPUT` function
+    ```
+    FOR EACH Customer:
+    DISPLAY Customer.CustNum Customer.Name Customer.CreditLimit 
+    LABEL "Current credit limit"
+    WITH FRAME a 1 DOWN ROW 1.
+    PROMPT-FOR Customer.CreditLimit LABEL "New credit limit" 
+    WITH SIDE-LABELS NO-BOX ROW 10 FRAME b.
+    IF INPUT FRAME b Customer.CreditLimit <> Customer.CreditLimit THEN DO:
+    DISPLAY "Changing max credit of" Customer.Name SKIP
+    "from" Customer.CreditLimit "to" INPUT FRAME b Customer.CreditLimit
+    WITH FRAME c ROW 15 NO-LABELS.
+    Customer.CreditLimit = INPUT FRAME b Customer.CreditLimit.
+    END.
+    ELSE DISPLAY "No change in credit limit" WITH FRAME d ROW 15.
+    END.
+    ```
+61. `INT64` function 
+
+62. `INTEGER` function
+    
+    Converts an expression of any data type, with the exception of BLOB, CLOB, and RAW, to a 32-bit integer value of data type INTEGER, rounding that value if necessary.
+
+    将任何数据类型的表达式(BLOB、CLOB和RAW除外)转换为数据类型integer的32位整数值，必要时将该值四舍五入。
+
+    ```
+    DEFINE VARIABLE street-number AS INTEGER NO-UNDO LABEL "Street Number".
+    FOR EACH Customer NO-LOCK:
+    ASSIGN street-number = INTEGER(ENTRY(1, Customer.Address, " ")) NO-ERROR.
+    IF ERROR-STATUS:ERROR THEN 
+    MESSAGE "Could not get street number of" Customer.Address.
+    ELSE 
+    DISPLAY Customer.CustNum Customer.Address street-number.
+    END.
+    ```
+
+63. `INTERVAL` function
+    
+    Returns the time interval between two DATE, DATETIME, or DATETIME-TZ values as an INT64 value. 
+
+    Syntax:
+    ```
+    INTERVAL ( datetime1 , datetime2 , interval-unit )
+    ```
+
+64. `KEYCODE` function
+
+    Evaluates a key label (such as F1) for a key in the predefined set of keyboard keys and returns the corresponding = key code (such as 301) as an INTEGER value. See OpenEdge Development: Programming Interfaces for a list of key codes and key labels.
+
+    在预定义的键盘键集中计算键标签(如F1)，并返回相应的=键代码(如301)作为INTEGER值。请参阅OpenEdge开发:编程接口以获取密钥代码和密钥标签的列表。
+
+    Syntax 
+    ```
+    KEYCODE ( key-label )
+    ```
+
+    ```
+    DEFINE VARIABLE msg AS CHARACTER NO-UNDO EXTENT 3.
+    DEFINE VARIABLE ix AS INTEGER NO-UNDO INITIAL 1.
+    DEFINE VARIABLE newi AS INTEGER NO-UNDO INITIAL 1.
+    DISPLAY 
+    " Please choose " SKIP(1)
+    " 1 Run order entry " @ msg[1]
+    ATTR-SPACE SKIP
+    " 2 Run receivables " @ msg[2]
+    ATTR-SPACE SKIP
+    " 3 Exit " @ msg[3]
+    ATTR-SPACE SKIP
+    WITH CENTERED FRAME menu NO-LABELS.
+    REPEAT:
+    COLOR DISPLAY MESSAGES msg[ix] WITH FRAME menu.
+    READKEY.
+    IF LASTKEY = KEYCODE("CURSOR-DOWN") AND ix < 3 THEN
+    newi = ix + 1.
+    ELSE IF LASTKEY = KEYCODE("CURSOR-UP") AND ix > 1 THEN
+    newi = ix - 1.
+    ELSE IF LASTKEY = KEYCODE("GO") OR LASTKEY = KEYCODE("RETURN") THEN LEAVE.
+    IF ix <> newi THEN 
+    COLOR DISPLAY NORMAL msg[ix] WITH FRAME menu.
+    ix = newi.
+    END.
+    ```
+
+65. `KEYFUNCTION` function
+
+    Evaluates an integer expression (such as 301) and returns a character string that is the function of the key associated with that integer expression (such as GO).
+
+    计算一个整数表达式(如301)并返回一个字符串，该字符串是与该整数表达式(如GO)相关联的键的函数。
+
+
+
+    ```
+    DEFINE VARIABLE msg AS CHARACTER NO-UNDO EXTENT 3.
+    DEFINE VARIABLE ix AS INTEGER NO-UNDO INITIAL 1.
+    DEFINE VARIABLE newi AS INTEGER NO-UNDO INITIAL 1.
+    DEFINE VARIABLE func AS CHARACTER NO-UNDO.
+    DISPLAY 
+    " Please choose " SKIP(1)
+    " 1 Run order entry " @ msg[1] ATTR-SPACE SKIP
+    " 2 Run receivables " @ msg[2] ATTR-SPACE SKIP
+    " 3 Exit " @ msg[3] ATTR-SPACE SKIP
+    WITH CENTERED FRAME menu NO-LABELS.
+    REPEAT:
+    COLOR DISPLAY MESSAGES msg[ix] WITH FRAME menu.
+    READKEY.
+    func = KEYFUNCTION(LASTKEY).
+    IF func = "CURSOR-DOWN" AND ix < 3 THEN 
+    newi = ix + 1.
+    ELSE IF func = "CURSOR-UP" AND ix > 1 THEN
+    newi = ix - 1.
+    ELSE IF func = "GO" OR func = "RETURN" THEN LEAVE.
+    IF ix <> newi THEN 
+    COLOR DISPLAY NORMAL msg[ix] WITH FRAME menu.
+    ix = newi.
+    END.
+    ```
+
+66. `KEYLABEL` function
+
+    Evaluates a key code (such as 301) and returns a character string that is the predefined keyboard label for that key (such as F1).
+
+    计算一个键代码(如301)并返回一个字符串，该字符串是该键的预定义键盘标签(如F1)。
+
+    ```
+    DISPLAY "Press the " + KBLABEL("GO") + " key to leave procedure"
+    FORMAT "x(50)".
+    REPEAT:
+    READKEY.
+    HIDE MESSAGE.
+    IF LASTKEY = KEYCODE(KBLABEL("GO")) THEN RETURN.
+    MESSAGE "Sorry, you pressed the" KEYLABEL(LASTKEY) "key.".
+    END.
+    ```
 
 
 
