@@ -1594,6 +1594,232 @@ negative value defined in the Data Dictionary
       END.
      ```
 
+102. `OUTPUT TO` statement
+
+      Specifies the new output destination for a stream.
+
+      ```
+      OUTPUT TO E:/p/cust-a.dat.
+      FOR EACH Customer NO-LOCK:
+      DISPLAY Customer.CustNum Customer.Name Customer.Address Customer.Address2
+      Customer.City Customer.State Customer.Country SKIP(2)
+      WITH 1 COLUMN SIDE-LABELS.
+      END.
+      OUTPUT CLOSE.
+      DISPLAY "Finished".
+      ```
+
+      ```
+      DEFINE VARIABLE ix AS INTEGER NO-UNDO.
+      OUTPUT TO TERMINAL PAGED.
+      FOR EACH Customer NO-LOCK BREAK BY Customer.SalesRep:
+      FIND SalesRep OF Customer NO-LOCK.
+      FORM HEADER TODAY
+      "Customer Listing For " TO 43
+      "Page " TO 55 PAGE-NUMBER - ix TO 58 FORMAT "99"
+      (SalesRep.RepName) FORMAT "x(30)" AT 25
+      WITH FRAME hdr PAGE-TOP CENTERED.
+      VIEW FRAME hdr.
+      DISPLAY Customer.CustNum COLUMN-LABEL "Customer!Number"
+      Customer.Name LABEL "Name"
+      Customer.Phone COLUMN-LABEL "Phone!Number" WITH CENTERED.
+      IF LAST-OF(Customer.SalesRep) THEN DO:
+      ix = PAGE-NUMBER.
+      PAGE.
+      END.
+      END. /* FOR EACH Customer */
+      OUTPUT CLOSE.
+      ```
+103. `OUTPUT CLOSE` statement
+
+104. `PAGE` statement
+
+      ```
+      DEFINE VARIABLE laststate AS CHARACTER NO-UNDO.
+      OUTPUT TO PRINTER.
+      FOR EACH Customer NO-LOCK BY Customer.State:
+      IF Customer.State <> laststate THEN DO:
+      IF laststate <> "" THEN PAGE.
+      laststate = Customer.State.
+      END.
+      DISPLAY Customer.CustNum Customer.Name Customer.Address Customer.City 
+      Customer.State.
+      END.
+      ```
+105. `PAGE-SIZE` function
+
+      ```
+      OUTPUT TO PRINTER.
+      FOR EACH Customer NO-LOCK BREAK BY Customer.State:
+      DISPLAY Customer.CustNum Customer.Name Customer.Address Customer.City
+      Customer.State.
+      IF LAST-OF(Customer.State) THEN DO:
+      IF LINE-COUNTER + 4 > PAGE-SIZE THEN PAGE.
+      ELSE DOWN 1.
+      END.
+      END.
+      ```
+
+106. `PAUSE` statement
+
+      ```
+      PAUSE 2 BEFORE-HIDE MESSAGE "Pausing 2 seconds".
+
+      FOR EACH Customer NO-LOCK WITH 13 DOWN:
+      DISPLAY Customer.CustNum Customer.Name.
+      END.
+      ```
+107. `PROGRAM-NAME` function
+
+      ```
+      DEFINE VARIABLE level AS INTEGER NO-UNDO INITIAL 1.
+
+      REPEAT WHILE PROGRAM-NAME(level) <> ?:
+          DISPLAY LEVEL PROGRAM-NAME(level) FORMAT "x(30)".
+          level = level + 1.
+      END.
+      ```
+
+108. `PROMPT-FOR` statement
+
+      Requests input and places that input in the screen buffer (frame).
+
+      ```
+      REPEAT:
+      PROMPT-FOR Customer.CustNum.
+      FIND Customer USING Customer.CustNum NO-ERROR.
+      IF NOT AVAILABLE Customer THEN DO:
+      MESSAGE "No such customer number.".
+      UNDO, RETRY.
+      END.
+      DISPLAY Customer.Name Customer.Phone Customer.SalesRep.
+      END.
+      ```
+
+      ```
+      REPEAT:
+      PROMPT-FOR SalesRep.SalesRep LABEL "Sales rep’s initials"
+      WITH FRAME namefr ROW 2 SIDE-LABELS.
+      FIND SalesRep NO-LOCK USING SalesRep.SalesRep.
+      DISPLAY SalesRep.RepName SalesRep.Region SalesRep.MonthQuota 
+      WITH 1 DOWN NO-HIDE.
+      END.
+      ```
+109. `PROPATH` function
+
+      Returns the current value of the PROPATH environment variable.
+      ```
+      DEFINE VARIABLE ix AS INTEGER NO-UNDO.
+      DISPLAY PROPATH.
+      REPEAT ix = 1 TO NUM-ENTRIES(PROPATH):
+      DISPLAY ENTRY(ix , PROPATH) FORMAT "x(30)".
+      END.
+      ```
+110. `PUT CURSOR` statement ==================
+111. `PUT SCREEN` statement
+      Displays a character expression at a specified location on a screen, overlaying any other data that might be displayed at that location.
+      在屏幕上的指定位置显示字符表达式，覆盖可能在该位置显示的任何其他数据。
+
+      ```
+      DEFINE VARIABLE paid-owed AS DECIMAL NO-UNDO.
+      DEFINE VARIABLE bal-label AS CHARACTER NO-UNDO FORMAT "x(20)".
+
+      FOR EACH Customer NO-LOCK:
+          paid-owed = Customer.Balance.
+          IF paid-owed < 0 /* Customer has a credit */ THEN DO:
+              paid-owed = - paid-owed.
+              bal-label = "Customer Credit".
+          END.
+          ELSE bal-label = "Unpaid balance".
+
+          DISPLAY Customer.CustNum Customer.Name paid-owed LABEL " " WITH 1 DOWN.
+          IF Customer.Balance < 0 THEN
+              PUT SCREEN COLOR MESSAGES ROW 2 COLUMN 34 bal-label.
+          ELSE 
+              PUT SCREEN ROW 2 COLUMN 34 bal-label.
+      END.
+      ```
+
+112. `PUT` statement
+      Sends the value of one or more expressions to an output destination other than the terminal.
+      将一个或多个表达式的值发送到终端以外的输出目的地。
+
+113. `RANDOM` function
+
+      Returns a random INTEGER value between two integers (inclusive). 
+
+114. `READKEY` statement
+
+      ```
+      FOR EACH Customer:
+      DISPLAY Customer.CustNum Customer.Name Customer.Address Customer.City 
+      Customer.State WITH 1 DOWN.
+      MESSAGE "If you want to delete this customer, press Y".
+      MESSAGE "Otherwise, press any other key.".
+      READKEY.
+      IF CHR(LASTKEY) = "Y" THEN DELETE Customer.
+      ELSE IF KEYFUNCTION(LASTKEY) = "END-ERROR" THEN LEAVE.
+      END.
+      ```
+
+115. `RECID` function
+
+      ```
+      DEFINE VARIABLE response AS LOGICAL NO-UNDO.
+      DEFINE VARIABLE crecid AS RECID NO-UNDO.
+      REPEAT:
+      PROMPT-FOR Customer.CustNum.
+      FIND Customer NO-LOCK USING Customer.CustNum.
+      crecid = RECID(Customer).
+      DISPLAY Customer.name.
+      response = YES.
+      UPDATE response LABEL "Update credit-limit ?".
+      IF response THEN DO:
+      FIND Customer WHERE RECID(Customer) = crecid EXCLUSIVE-LOCK.
+      UPDATE Customer.CreditLimit.
+      END.
+      END.
+      ```
+
+116. `REPEAT` statement
+117. `REPLACE` function
+118. `RETRY` function
+      ```
+      REPEAT:
+      PROMPT-FOR Customer.CustNum.
+      FIND Customer USING Customer.CustNum.
+      IF NOT RETRY THEN 
+      DISPLAY Customer.Name Customer.Address Customer.City Customer.State
+      Customer.Country.
+      ELSE 
+      DISPLAY Customer.Country.
+      
+      SET Customer.Name Customer.Address Customer.City Customer.State
+      Customer.Country.
+      IF Customer.Country = "" THEN UNDO, RETRY.
+      END.
+      ```
+
+119. `RETURN` statement  ================
+
+120. `RETURN-VALUE` function  ================
+
+121. `RIGHT-TRIM` function
+122. `R-INDEX` function
+123. `ROUND` function
+124. `RUN` statement 
+125. `SEARCH` function ==
+
+
+
+
+
+
+
+
+
+
+
 
 
 
