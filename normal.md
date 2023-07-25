@@ -1809,7 +1809,155 @@ negative value defined in the Data Dictionary
 123. `ROUND` function
 124. `RUN` statement 
 125. `SEARCH` function ==
+126. `SET` statement
+      ```
+      FOR EACH Item:
+        DISPLAY Item.ItemNum.
+        SET Item.ItemName Item.OnHand Item.Allocated Item.Price.
+      END.
+      ```
+      ```
+      FOR EACH Customer:
+        DISPLAY Customer.CustNum Customer.Name Customer.CreditLimit.
+        SET Customer.Name Customer.CreditLimit
+          VALIDATE(Customer.CreditLimit > 0, "Invalid credit limit.")
+          HELP "Enter a positive credit-limit.".
+        REPEAT:
+        CREATE Order.
+        Order.CustNum = Customer.CustNum.
+        SET Order.OrderNum Order.ShipDate VALIDATE(Order.ShipDate > TODAY,
+        "Ship date too early.").
+        END.
+      END.
+      ```
+127. `STATUS` statement   ========= ??
+      ```
+      STATUS DEFAULT "All Around Sports Order Processing System".
+      STATUS INPUT "Enter data, or use the " + KBLABEL("END-ERROR") +
+      " key to exit".
+      FOR EACH Customer:
+      DISPLAY Customer.Name.
+      FOR EACH Order OF Customer:
+      UPDATE Order.OrderNum Order.PromiseDate Order.OrderDate Order.ShipDate.
+      END.
+      UPDATE Customer.CreditLimit.
+      END.
+      ```
+128. `STOP` statement
 
+      ```
+      DEFINE VARIABLE ans AS LOGICAL NO-UNDO.
+
+      FOR EACH Customer:
+      DISPLAY Customer.CustNum Customer.Name.
+      UPDATE Customer.CreditLimit.
+      ans = FALSE.
+      MESSAGE "Stopping now undoes changes to this record.".
+      MESSAGE "Do you want to stop now?" .
+      UPDATE ans.
+      IF ans THEN STOP.
+      END.
+      ```
+129. `STRING` function
+
+      Converts a value of any data type into a character value. 
+
+      ```
+      DISPLAY SKIP(2) "The time is now" STRING(TIME,"HH:MM AM") SKIP(2)
+      WITH NO-BOX NO-LABELS CENTERED.
+
+      FOR EACH Customer NO-LOCK:
+      DISPLAY Customer.Name + " --" + 
+          STRING(Customer.CustNum, ">>>9") FORMAT "x(30)" AT 1
+          Customer.Address AT 33
+          Customer.City + ", " + Customer.State + " " + Customer.PostalCode 
+              FORMAT "x(22)" AT 33 SKIP(1)
+          WITH NO-BOX NO-LABELS CENTERED.
+      END.
+      ```
+130. `SUBSTRING` function
+
+      ```
+      DEFINE VARIABLE inv-num AS CHARACTER NO-UNDO FORMAT "x(11)"
+      LABEL "Invoice Number".
+      DEFINE VARIABLE snum AS INTEGER NO-UNDO FORMAT "9999"
+      LABEL " Starting Order Number".
+      DEFINE VARIABLE enum LIKE snum NO-UNDO
+      LABEL " Ending Order Number".
+      DEFINE VARIABLE num LIKE snum NO-UNDO
+      LABEL "Starting Invoice Number".
+      UPDATE " Creating Invoices" 
+      SKIP(2) snum SKIP(1) enum SKIP(2) num SKIP(2)
+      WITH SIDE-LABELS CENTERED NO-BOX.
+      FOR EACH Order WHERE Order.OrderNum >= snum AND Order.OrderNum <= enum:
+      inv-num = SUBSTRING(STRING(TODAY),1,2,"CHARACTER") + 
+      SUBSTRING(STRING(TODAY),7,2,"CHARACTER") + " - " + 
+      STRING(num,"9999").
+      DISPLAY Order.OrderNum inv-num WITH CENTERED.
+      /* Do creation and printing of invoice here */
+      num = num + 1.
+      END.
+      ```
+
+131. `TERMINAL` function
+      ```
+      MESSAGE "You are currently using a" TERMINAL "terminal.".
+      ```
+
+132. `TIME` function
+      ```
+      DEFINE VARIABLE hour AS INTEGER NO-UNDO.
+      DEFINE VARIABLE minute AS INTEGER NO-UNDO.
+      DEFINE VARIABLE sec AS INTEGER NO-UNDO.
+      DEFINE VARIABLE timeleft AS INTEGER NO-UNDO.
+      timeleft = (24 * 60 * 60) - TIME. 
+      /* seconds till next midnight */
+      sec = timeleft MOD 60.
+      timeleft = (timeleft - sec) / 60. 
+      /* minutes till next midnight */
+      minute = timeleft MOD 60.
+      /* hours till next midnight */
+      hour = (timeleft - minute) / 60. 
+      DISPLAY "Time to midnight:" hour minute sec .
+      ```
+      ```
+      DISPLAY STRING(TIME,"HH:MM:SS").
+      ```
+133. `TIMEZONE` function
+
+134. `TRIM` function
+135. `TRUNCATE` function
+      ```
+      FOR EACH Customer:
+      FORM Customer.CustNum Customer.Name Customer.CreditLimit
+      new-max LIKE Customer.CreditLimit LABEL "New Credit limit".
+      DISPLAY Customer.CustNum Customer.Name Customer.CreditLimit.
+      Customer.CreditLimit = 
+      TRUNCATE((Customer.CreditLimit * 2) / 1000 ,0) * 1000.
+      IF Customer.CreditLimit < 15000 THEN 
+      Customer.CreditLimit = 15000.
+      DISPLAY Customer.CreditLimit @ new-max.
+      END.
+      ```
+136. `UNDERLINE` statement
+137. `UNDO` statement
+138. `UNFORMATTED` option
+139. `UPDATE` statement
+      ```
+      FOR EACH Customer:
+      UPDATE Customer.Name Customer.Address Customer.City Customer.State
+      Customer.Country.
+      END.
+      ```
+140. `USERID` function      
+      ```
+      DISPLAY USERID("DICTDB") LABEL "You are logged in as" WITH SIDE-LABELS.
+      ```
+
+141. `VIEW` statement
+142. `WEEKDAY` function
+143. `YEAR` function
+    
 
 
 
